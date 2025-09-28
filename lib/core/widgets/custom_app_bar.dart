@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:music_app/app/glassmorphism_widgets.dart';
+import 'package:music_app/app/theme.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -12,6 +14,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showBackButton;
   final Widget? bottom;
   final double? bottomHeight;
+  final bool useGlass;
 
   const CustomAppBar({
     super.key,
@@ -26,10 +29,22 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.showBackButton = false,
     this.bottom,
     this.bottomHeight,
+    this.useGlass = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (useGlass) {
+      return GlassAppBar(
+        title: title,
+        leading: _buildLeading(context),
+        actions: actions,
+        centerTitle: centerTitle,
+        backgroundColor: backgroundColor,
+        elevation: elevation,
+      );
+    }
+
     final theme = Theme.of(context);
 
     return AppBar(
@@ -82,10 +97,11 @@ class GradientAppBar extends StatelessWidget implements PreferredSizeWidget {
   final List<Widget>? actions;
   final Widget? leading;
   final bool centerTitle;
-  final List<Color> gradientColors;
+  final List<Color>? gradientColors;
   final Color? foregroundColor;
   final VoidCallback? onBackPressed;
   final bool showBackButton;
+  final bool useGlass;
 
   const GradientAppBar({
     super.key,
@@ -93,20 +109,37 @@ class GradientAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.actions,
     this.leading,
     this.centerTitle = true,
-    this.gradientColors = const [Color(0xFF667eea), Color(0xFF764ba2)],
-    this.foregroundColor = Colors.white,
+    this.gradientColors,
+    this.foregroundColor,
     this.onBackPressed,
     this.showBackButton = false,
+    this.useGlass = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colors = gradientColors ?? MusicAppTheme.primaryGradient;
+    final textColor = foregroundColor ?? Colors.white;
+
+    if (useGlass) {
+      return GradientBackground(
+        colors: colors,
+        child: GlassAppBar(
+          title: title,
+          leading: _buildLeading(context),
+          actions: actions,
+          centerTitle: centerTitle,
+          backgroundColor: Colors.transparent,
+        ),
+      );
+    }
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: gradientColors,
+          colors: colors,
         ),
       ),
       child: AppBar(
@@ -115,12 +148,12 @@ class GradientAppBar extends StatelessWidget implements PreferredSizeWidget {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: foregroundColor,
+            color: textColor,
           ),
         ),
         centerTitle: centerTitle,
         backgroundColor: Colors.transparent,
-        foregroundColor: foregroundColor,
+        foregroundColor: textColor,
         elevation: 0,
         leading: _buildLeading(context),
         actions: actions,
@@ -155,6 +188,7 @@ class SearchAppBar extends StatefulWidget implements PreferredSizeWidget {
   final List<Widget>? actions;
   final bool showBackButton;
   final VoidCallback? onBackPressed;
+  final bool useGlass;
 
   const SearchAppBar({
     super.key,
@@ -165,6 +199,7 @@ class SearchAppBar extends StatefulWidget implements PreferredSizeWidget {
     this.actions,
     this.showBackButton = true,
     this.onBackPressed,
+    this.useGlass = true,
   });
 
   @override
@@ -197,6 +232,41 @@ class _SearchAppBarState extends State<SearchAppBar> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.useGlass) {
+      return GlassAppBar(
+        leading: widget.showBackButton
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed:
+                    widget.onBackPressed ?? () => Navigator.of(context).pop(),
+              )
+            : null,
+        title: null, // We'll put the search field in the title space
+        actions: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: GlassTextField(
+                controller: _controller,
+                hintText: widget.hintText,
+                onChanged: widget.onSearchChanged,
+                suffixIcon: _hasText
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, color: Colors.white),
+                        onPressed: () {
+                          _controller.clear();
+                          widget.onClearPressed?.call();
+                        },
+                      )
+                    : const Icon(Icons.search, color: Colors.white),
+              ),
+            ),
+          ),
+          ...?widget.actions,
+        ],
+      );
+    }
+
     return AppBar(
       leading: widget.showBackButton
           ? IconButton(
@@ -246,6 +316,8 @@ class CollapsibleAppBar extends StatelessWidget {
   final bool pinned;
   final bool floating;
   final Widget? bottom;
+  final bool useGlass;
+  final List<Color>? gradientColors;
 
   const CollapsibleAppBar({
     super.key,
@@ -260,16 +332,21 @@ class CollapsibleAppBar extends StatelessWidget {
     this.pinned = true,
     this.floating = false,
     this.bottom,
+    this.useGlass = true,
+    this.gradientColors,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = gradientColors ?? MusicAppTheme.primaryGradient;
+
     return SliverAppBar(
       expandedHeight: expandedHeight,
       floating: floating,
       pinned: pinned,
-      backgroundColor: backgroundColor,
-      foregroundColor: foregroundColor,
+      backgroundColor: backgroundColor ?? Colors.transparent,
+      foregroundColor: foregroundColor ?? Colors.white,
       leading: leading,
       actions: actions,
       bottom: bottom as PreferredSizeWidget?,
@@ -280,7 +357,18 @@ class CollapsibleAppBar extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                shadows: [
+                  Shadow(
+                    offset: Offset(1, 1),
+                    blurRadius: 3,
+                    color: Colors.black54,
+                  ),
+                ],
+              ),
             ),
             if (subtitle != null)
               Text(
@@ -288,41 +376,124 @@ class CollapsibleAppBar extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.normal,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      offset: Offset(1, 1),
+                      blurRadius: 3,
+                      color: Colors.black54,
+                    ),
+                  ],
                 ),
               ),
           ],
         ),
-        background: backgroundImage != null
-            ? Stack(
-                fit: StackFit.expand,
-                children: [
-                  backgroundImage!,
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.7),
-                        ],
-                      ),
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Background
+            backgroundImage != null
+                ? backgroundImage!
+                : GradientBackground(colors: colors, child: Container()),
+
+            // Gradient overlay
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                ),
+              ),
+            ),
+
+            // Glass effect for the bottom area if useGlass is true
+            if (useGlass)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: 100,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        theme.customColors.glassBackground,
+                      ],
                     ),
-                  ),
-                ],
-              )
-            : Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Theme.of(context).primaryColor,
-                      Theme.of(context).primaryColor.withOpacity(0.8),
-                    ],
                   ),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Glass Search Bar that can be used within other screens
+class GlassSearchBar extends StatefulWidget {
+  final String hintText;
+  final ValueChanged<String>? onChanged;
+  final VoidCallback? onSubmitted;
+  final EdgeInsetsGeometry? margin;
+  final EdgeInsetsGeometry? padding;
+
+  const GlassSearchBar({
+    super.key,
+    this.hintText = 'Search music...',
+    this.onChanged,
+    this.onSubmitted,
+    this.margin,
+    this.padding,
+  });
+
+  @override
+  State<GlassSearchBar> createState() => _GlassSearchBarState();
+}
+
+class _GlassSearchBarState extends State<GlassSearchBar> {
+  final TextEditingController _controller = TextEditingController();
+  bool _hasText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() {
+      setState(() {
+        _hasText = _controller.text.isNotEmpty;
+      });
+      widget.onChanged?.call(_controller.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: widget.margin ?? const EdgeInsets.all(16),
+      child: GlassTextField(
+        controller: _controller,
+        hintText: widget.hintText,
+        padding: widget.padding ?? const EdgeInsets.all(20),
+        prefixIcon: const Icon(Icons.search, color: Colors.white, size: 24),
+        suffixIcon: _hasText
+            ? IconButton(
+                icon: const Icon(Icons.clear, color: Colors.white),
+                onPressed: () {
+                  _controller.clear();
+                },
+              )
+            : null,
+        onChanged: widget.onChanged,
       ),
     );
   }

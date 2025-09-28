@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:music_app/app/theme.dart';
 import 'package:music_app/presentation/screens/splash/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'routes.dart';
-import 'theme.dart';
 import '../presentation/providers/theme_provider.dart';
 
 class MyApp extends StatelessWidget {
@@ -15,9 +15,9 @@ class MyApp extends StatelessWidget {
         // Show a loading indicator while theme preferences are loading
         if (!themeProvider.isInitialized) {
           return MaterialApp(
-            title: 'Music Player',
+            title: 'SoundWave',
             debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
+            theme: MusicAppTheme.lightTheme, // Use new theme
             home: const Scaffold(
               body: Center(
                 child: Column(
@@ -34,13 +34,12 @@ class MyApp extends StatelessWidget {
         }
 
         return MaterialApp(
-          title: 'Music Player',
+          title: 'SoundWave',
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
+          theme: MusicAppTheme.lightTheme, // Use new theme
+          darkTheme: MusicAppTheme.darkTheme, // Use new theme
           themeMode: themeProvider.themeMode,
-          home:
-              const SplashScreen(), // Direct home instead of routing initially
+          home: const SplashScreen(),
           routes: AppRoutes.routes,
           onGenerateRoute: AppRoutes.onGenerateRoute,
           onUnknownRoute: (settings) {

@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:music_app/app/glassmorphism_widgets.dart';
+import 'package:music_app/app/theme.dart';
+import 'package:music_app/core/widgets/mini_player.dart';
+import 'dart:math' as math;
 import 'package:provider/provider.dart';
 import '../../providers/audio_player_provider.dart';
 import '../../providers/music_library_provider.dart';
@@ -14,9 +18,12 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int _selectedIndex = 0;
   final PageController _pageController = PageController();
+
+  late AnimationController _gradientController;
+  late Animation<double> _gradientAnimation;
 
   final List<Widget> _pages = [
     const LibraryScreen(),
@@ -27,105 +34,124 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+
     // Load music library on app start
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<MusicLibraryProvider>().loadMusic();
     });
+
+    // Initialize gradient animation
+    _gradientController = AnimationController(
+      duration: const Duration(seconds: 8),
+      vsync: this,
+    );
+
+    _gradientAnimation = Tween<double>(begin: 0.0, end: 2 * math.pi).animate(
+      CurvedAnimation(parent: _gradientController, curve: Curves.linear),
+    );
+
+    _gradientController.repeat();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: PageView(
-              controller: _pageController,
-              onPageChanged: (index) {
-                setState(() {
-                  _selectedIndex = index;
-                });
-              },
-              children: _pages,
+      extendBodyBehindAppBar: true,
+      extendBody: true,
+      body: AnimatedBuilder(
+        animation: _gradientAnimation,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color.lerp(
+                    MusicAppTheme.primaryGradient[0],
+                    MusicAppTheme.primaryGradient[1],
+                    math.sin(_gradientAnimation.value) * 0.5 + 0.5,
+                  )!,
+                  Color.lerp(
+                    MusicAppTheme.secondaryGradient[0],
+                    MusicAppTheme.secondaryGradient[1],
+                    math.cos(_gradientAnimation.value * 0.8) * 0.5 + 0.5,
+                  )!,
+                  Color.lerp(
+                    MusicAppTheme.primaryGradient[1],
+                    MusicAppTheme.accentPink,
+                    math.sin(_gradientAnimation.value * 1.2) * 0.5 + 0.5,
+                  )!,
+                ],
+              ),
             ),
-          ),
-          // Temporary mini player replacement until you create the MiniPlayer widget
-          Consumer<AudioPlayerProvider>(
-            builder: (context, audioProvider, child) {
-              if (audioProvider.currentSong != null) {
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const NowPlayingScreen(),
+            child: Stack(
+              children: [
+                // Floating particles
+                ...List.generate(6, (index) => _buildFloatingOrb(index)),
+
+                // Main content
+                Column(
+                  children: [
+                    Expanded(
+                      child: PageView(
+                        controller: _pageController,
+                        onPageChanged: (index) {
+                          setState(() {
+                            _selectedIndex = index;
+                          });
+                        },
+                        children: _pages.map((page) {
+                          return Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.transparent,
+                            ),
+                            child: page,
+                          );
+                        }).toList(),
                       ),
-                    );
-                  },
-                  child: Container(
-                    height: 60,
-                    margin: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
                     ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          margin: const EdgeInsets.all(5),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Icon(Icons.music_note),
-                        ),
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                audioProvider.currentSong?.title ?? 'Unknown',
-                                style: Theme.of(context).textTheme.titleMedium,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                audioProvider.currentSong?.artist ??
-                                    'Unknown Artist',
-                                style: Theme.of(context).textTheme.bodyMedium,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () => audioProvider.playPause(),
-                          icon: Icon(
-                            audioProvider.isPlaying
-                                ? Icons.pause
-                                : Icons.play_arrow,
-                          ),
-                        ),
-                      ],
+
+                    // Glassmorphism Mini Player
+                    Consumer<AudioPlayerProvider>(
+                      builder: (context, audioProvider, child) {
+                        if (audioProvider.currentSong != null) {
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const NowPlayingScreen(),
+                                ),
+                              );
+                            },
+                            child: MiniPlayer(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const NowPlayingScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
                     ),
-                  ),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-        ],
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
       ),
-      bottomNavigationBar: BottomNavigationBar(
+
+      // Glassmorphism Bottom Navigation
+      bottomNavigationBar: GlassBottomNavBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {
@@ -138,13 +164,19 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.library_music),
+          GlassBottomNavItem(
+            icon: Icons.library_music_outlined,
+            activeIcon: Icons.library_music,
             label: 'Library',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
+          GlassBottomNavItem(
+            icon: Icons.search_outlined,
+            activeIcon: Icons.search,
+            label: 'Search',
+          ),
+          GlassBottomNavItem(
+            icon: Icons.settings_outlined,
+            activeIcon: Icons.settings,
             label: 'Settings',
           ),
         ],
@@ -152,9 +184,45 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildFloatingOrb(int index) {
+    final size = MediaQuery.of(context).size;
+    final random = math.Random(index);
+    final orbSize = 20 + random.nextDouble() * 40;
+
+    return AnimatedBuilder(
+      animation: _gradientAnimation,
+      builder: (context, child) {
+        final offsetX =
+            size.width * 0.1 +
+            math.sin(_gradientAnimation.value + index) * size.width * 0.8;
+        final offsetY =
+            size.height * 0.1 +
+            math.cos(_gradientAnimation.value * 0.7 + index) *
+                size.height *
+                0.8;
+
+        return Positioned(
+          left: offsetX,
+          top: offsetY,
+          child: Container(
+            width: orbSize,
+            height: orbSize,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [Colors.white.withOpacity(0.2), Colors.transparent],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _pageController.dispose();
+    _gradientController.dispose();
     super.dispose();
   }
 }

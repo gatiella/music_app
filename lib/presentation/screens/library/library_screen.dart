@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_app/app/glassmorphism_widgets.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_library_provider.dart';
 import 'songs_tab.dart';
@@ -25,91 +26,202 @@ class _LibraryScreenState extends State<LibraryScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Library',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+    return GradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: GlassAppBar(
+          title: 'Library',
+          actions: [
+            IconButton(
+              onPressed: () {
+                context.read<MusicLibraryProvider>().loadMusic();
+              },
+              icon: const Icon(Icons.refresh, color: Colors.white),
+            ),
+            IconButton(
+              onPressed: () {
+                _showSortOptions(context);
+              },
+              icon: const Icon(Icons.sort, color: Colors.white),
+            ),
+          ],
         ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              context.read<MusicLibraryProvider>().loadMusic();
-            },
-            icon: const Icon(Icons.refresh),
-          ),
-          IconButton(
-            onPressed: () {
-              // Show sort options
-              _showSortOptions(context);
-            },
-            icon: const Icon(Icons.sort),
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Songs'),
-            Tab(text: 'Artists'),
-            Tab(text: 'Albums'),
-            Tab(text: 'Playlists'),
+        body: Consumer<MusicLibraryProvider>(
+          builder: (context, libraryProvider, child) {
+            if (libraryProvider.isLoading) {
+              return _buildLoadingView();
+            }
+
+            if (libraryProvider.songs.isEmpty) {
+              return _buildEmptyView(libraryProvider);
+            }
+
+            return Column(
+              children: [
+                // Custom Tab Bar with Glass Effect
+                _buildGlassTabBar(),
+                // Tab Bar View
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: const [
+                      SongsTab(),
+                      ArtistsTab(),
+                      AlbumsTab(),
+                      PlaylistsTab(),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingView() {
+    return Center(
+      child: GlassContainer(
+        padding: const EdgeInsets.all(40),
+        margin: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white.withOpacity(0.2),
+                    Colors.white.withOpacity(0.1),
+                  ],
+                ),
+              ),
+              child: const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                strokeWidth: 3,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Loading your music...',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Please wait while we scan your device',
+              style: TextStyle(color: Colors.white70),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
-      body: Consumer<MusicLibraryProvider>(
-        builder: (context, libraryProvider, child) {
-          if (libraryProvider.isLoading) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Loading your music...'),
+    );
+  }
+
+  Widget _buildEmptyView(MusicLibraryProvider libraryProvider) {
+    return Center(
+      child: GlassContainer(
+        padding: const EdgeInsets.all(40),
+        margin: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.1),
+              ),
+              child: const Icon(
+                Icons.music_off,
+                size: 48,
+                color: Colors.white70,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'No music found',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Make sure you have music files on your device',
+              style: TextStyle(color: Colors.white70),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            GlassButton(
+              onPressed: () {
+                libraryProvider.loadMusic();
+              },
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withOpacity(0.2),
+                  Colors.white.withOpacity(0.1),
                 ],
               ),
-            );
-          }
-
-          if (libraryProvider.songs.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.music_off, size: 64, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.refresh, color: Colors.white, size: 20),
+                  SizedBox(width: 8),
                   Text(
-                    'No music found',
-                    style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Make sure you have music files on your device',
-                    style: TextStyle(color: Colors.grey[500]),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      libraryProvider.loadMusic();
-                    },
-                    child: const Text('Refresh'),
+                    'Refresh',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
-            );
-          }
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-          return TabBarView(
-            controller: _tabController,
-            children: const [
-              SongsTab(),
-              ArtistsTab(),
-              AlbumsTab(),
-              PlaylistsTab(),
+  Widget _buildGlassTabBar() {
+    return GlassContainer(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(6),
+      borderRadius: BorderRadius.circular(25),
+      child: TabBar(
+        controller: _tabController,
+        indicator: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            colors: [
+              Colors.white.withOpacity(0.3),
+              Colors.white.withOpacity(0.2),
             ],
-          );
-        },
+          ),
+        ),
+        indicatorPadding: const EdgeInsets.all(2),
+        dividerColor: Colors.transparent,
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white.withOpacity(0.6),
+        labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+        tabs: const [
+          Tab(text: 'Songs'),
+          Tab(text: 'Artists'),
+          Tab(text: 'Albums'),
+          Tab(text: 'Playlists'),
+        ],
       ),
     );
   }
@@ -117,57 +229,101 @@ class _LibraryScreenState extends State<LibraryScreen>
   void _showSortOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
+      backgroundColor: Colors.transparent,
+      builder: (context) => GlassContainer(
+        margin: const EdgeInsets.all(16),
+        borderRadius: BorderRadius.circular(24),
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Sort by',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Sort by',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(Icons.title),
-              title: const Text('Title'),
-              onTap: () {
-                Navigator.pop(context);
-                // Sort by title
+
+            // Sort Options
+            ...[
+              {
+                'icon': Icons.title,
+                'title': 'Title',
+                'action': () {
+                  Navigator.pop(context);
+                  // Sort by title
+                },
               },
-            ),
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text('Artist'),
-              onTap: () {
-                Navigator.pop(context);
-                // Sort by artist
+              {
+                'icon': Icons.person,
+                'title': 'Artist',
+                'action': () {
+                  Navigator.pop(context);
+                  // Sort by artist
+                },
               },
-            ),
-            ListTile(
-              leading: const Icon(Icons.album),
-              title: const Text('Album'),
-              onTap: () {
-                Navigator.pop(context);
-                // Sort by album
+              {
+                'icon': Icons.album,
+                'title': 'Album',
+                'action': () {
+                  Navigator.pop(context);
+                  // Sort by album
+                },
               },
-            ),
-            ListTile(
-              leading: const Icon(Icons.access_time),
-              title: const Text('Duration'),
-              onTap: () {
-                Navigator.pop(context);
-                // Sort by duration
+              {
+                'icon': Icons.access_time,
+                'title': 'Duration',
+                'action': () {
+                  Navigator.pop(context);
+                  // Sort by duration
+                },
               },
-            ),
-            ListTile(
-              leading: const Icon(Icons.date_range),
-              title: const Text('Date Added'),
-              onTap: () {
-                Navigator.pop(context);
-                // Sort by date added
+              {
+                'icon': Icons.date_range,
+                'title': 'Date Added',
+                'action': () {
+                  Navigator.pop(context);
+                  // Sort by date added
+                },
               },
-            ),
+            ].asMap().entries.map((entry) {
+              final index = entry.key;
+              final item = entry.value;
+
+              return Column(
+                children: [
+                  GlassMusicCard(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        item['icon'] as IconData,
+                        color: Colors.white,
+                      ),
+                    ),
+                    title: item['title'] as String,
+                    onTap: item['action'] as VoidCallback,
+                    height: 60,
+                    padding: const EdgeInsets.all(12),
+                  ),
+                  if (index < 4) // Don't add divider after last item
+                    Container(
+                      height: 1,
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      color: Colors.white.withOpacity(0.1),
+                    ),
+                ],
+              );
+            }),
           ],
         ),
       ),

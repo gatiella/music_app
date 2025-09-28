@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 import '../../../../data/models/song.dart';
+import 'package:music_app/app/theme.dart';
+import 'package:music_app/app/glassmorphism_widgets.dart';
 
 class SongListTile extends StatefulWidget {
   final Song song;
@@ -7,6 +10,8 @@ class SongListTile extends StatefulWidget {
   final bool isPlaying;
   final VoidCallback onTap;
   final VoidCallback? onMorePressed;
+  final bool useGlass;
+  final EdgeInsetsGeometry? margin;
 
   const SongListTile({
     super.key,
@@ -15,6 +20,8 @@ class SongListTile extends StatefulWidget {
     this.isCurrentSong = false,
     this.isPlaying = false,
     this.onMorePressed,
+    this.useGlass = true,
+    this.margin,
   });
 
   @override
@@ -22,26 +29,85 @@ class SongListTile extends StatefulWidget {
 }
 
 class _SongListTileState extends State<SongListTile>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
+  late AnimationController _glowController;
+  late AnimationController _waveController;
+
   late Animation<double> _scaleAnimation;
+  late Animation<double> _glowAnimation;
+  late Animation<double> _waveAnimation;
+
   bool _isPressed = false;
 
   @override
   void initState() {
     super.initState();
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 150),
       vsync: this,
     );
+
+    _glowController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    _waveController = AnimationController(
+      duration: const Duration(milliseconds: 2000),
+      vsync: this,
+    );
+
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
+
+    _glowAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
+    );
+
+    _waveAnimation = Tween<double>(
+      begin: 0.0,
+      end: 2 * math.pi,
+    ).animate(CurvedAnimation(parent: _waveController, curve: Curves.linear));
+
+    if (widget.isCurrentSong) {
+      _glowController.repeat(reverse: true);
+      if (widget.isPlaying) {
+        _waveController.repeat();
+      }
+    }
+  }
+
+  @override
+  void didUpdateWidget(SongListTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.isCurrentSong != oldWidget.isCurrentSong) {
+      if (widget.isCurrentSong) {
+        _glowController.repeat(reverse: true);
+      } else {
+        _glowController.stop();
+        _glowController.reset();
+      }
+    }
+
+    if (widget.isPlaying != oldWidget.isPlaying) {
+      if (widget.isPlaying && widget.isCurrentSong) {
+        _waveController.repeat();
+      } else {
+        _waveController.stop();
+        _waveController.reset();
+      }
+    }
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _glowController.dispose();
+    _waveController.dispose();
     super.dispose();
   }
 
@@ -63,10 +129,9 @@ class _SongListTileState extends State<SongListTile>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return AnimatedBuilder(
-      animation: _scaleAnimation,
+      animation: Listenable.merge([_scaleAnimation, _glowAnimation]),
       builder: (context, child) {
         return Transform.scale(
           scale: _scaleAnimation.value,
@@ -75,96 +140,189 @@ class _SongListTileState extends State<SongListTile>
             onTapUp: _onTapUp,
             onTapCancel: _onTapCancel,
             onTap: widget.onTap,
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: widget.isCurrentSong
-                    ? theme.primaryColor.withOpacity(0.08)
-                    : (_isPressed
-                          ? (isDark
-                                ? Colors.white.withOpacity(0.05)
-                                : Colors.black.withOpacity(0.03))
-                          : Colors.transparent),
-                borderRadius: BorderRadius.circular(16),
-                border: widget.isCurrentSong
-                    ? Border.all(
-                        color: theme.primaryColor.withOpacity(0.2),
-                        width: 1,
-                      )
-                    : null,
-              ),
-              child: Row(
-                children: [
-                  // Album Art with modern styling
-                  _buildAlbumArt(theme),
-                  const SizedBox(width: 12),
-
-                  // Song Info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Title
-                        Text(
-                          widget.song.title,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: widget.isCurrentSong
-                                ? FontWeight.w600
-                                : FontWeight.w500,
-                            color: widget.isCurrentSong
-                                ? theme.primaryColor
-                                : theme.colorScheme.onSurface,
-                            height: 1.2,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-
-                        // Artist and metadata row
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                widget.song.artist,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: widget.isCurrentSong
-                                      ? theme.primaryColor.withOpacity(0.8)
-                                      : theme.colorScheme.onSurface.withOpacity(
-                                          0.7,
-                                        ),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-
-                            // Metadata chips
-                            _buildMetadataRow(theme),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(width: 8),
-
-                  // Trailing actions
-                  _buildTrailingActions(theme),
-                ],
-              ),
-            ),
+            child: widget.useGlass
+                ? _buildGlassTile(theme)
+                : _buildRegularTile(theme),
           ),
         );
       },
     );
   }
 
-  Widget _buildAlbumArt(ThemeData theme) {
+  Widget _buildGlassTile(ThemeData theme) {
+    return Container(
+      margin:
+          widget.margin ??
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: GlassContainer(
+        padding: const EdgeInsets.all(16),
+        borderRadius: BorderRadius.circular(20),
+        color: widget.isCurrentSong
+            ? MusicAppTheme.primaryPurple.withOpacity(0.1)
+            : null,
+        border: widget.isCurrentSong
+            ? Border.all(color: Colors.white.withOpacity(0.4), width: 1.5)
+            : null,
+        boxShadow: widget.isCurrentSong
+            ? [
+                BoxShadow(
+                  color: MusicAppTheme.primaryPurple.withOpacity(
+                    0.3 * _glowAnimation.value,
+                  ),
+                  blurRadius: 20 * _glowAnimation.value,
+                  spreadRadius: 2 * _glowAnimation.value,
+                ),
+              ]
+            : null,
+        child: Row(
+          children: [
+            _buildGlassAlbumArt(theme),
+            const SizedBox(width: 16),
+            Expanded(child: _buildSongInfo(theme)),
+            const SizedBox(width: 12),
+            _buildGlassTrailingActions(theme),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRegularTile(ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      margin:
+          widget.margin ??
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: widget.isCurrentSong
+            ? theme.primaryColor.withOpacity(0.08)
+            : (_isPressed
+                  ? (isDark
+                        ? Colors.white.withOpacity(0.05)
+                        : Colors.black.withOpacity(0.03))
+                  : Colors.transparent),
+        borderRadius: BorderRadius.circular(16),
+        border: widget.isCurrentSong
+            ? Border.all(color: theme.primaryColor.withOpacity(0.2), width: 1)
+            : null,
+      ),
+      child: Row(
+        children: [
+          _buildRegularAlbumArt(theme),
+          const SizedBox(width: 12),
+          Expanded(child: _buildSongInfo(theme)),
+          const SizedBox(width: 8),
+          _buildRegularTrailingActions(theme),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGlassAlbumArt(ThemeData theme) {
+    return SizedBox(
+      width: 60,
+      height: 60,
+      child: Stack(
+        children: [
+          // Base album art container
+          GlassContainer(
+            width: 60,
+            height: 60,
+            padding: EdgeInsets.zero,
+            borderRadius: BorderRadius.circular(16),
+            color: widget.song.albumArt == null
+                ? Colors.white.withOpacity(0.1)
+                : null,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: widget.song.albumArt != null
+                  ? Image.network(
+                      widget.song.albumArt!,
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return _buildDefaultGlassArtwork();
+                      },
+                    )
+                  : _buildDefaultGlassArtwork(),
+            ),
+          ),
+
+          // Animated overlay for current song
+          if (widget.isCurrentSong)
+            AnimatedBuilder(
+              animation: _waveAnimation,
+              builder: (context, child) {
+                return Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        MusicAppTheme.primaryPurple.withOpacity(0.8),
+                        MusicAppTheme.accentPink.withOpacity(0.8),
+                      ],
+                    ),
+                  ),
+                  child: Stack(
+                    children: [
+                      // Animated waves for playing state
+                      if (widget.isPlaying)
+                        ...List.generate(3, (index) {
+                          return Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(
+                                    0.3 *
+                                        math
+                                            .sin(
+                                              _waveAnimation.value +
+                                                  index * 0.5,
+                                            )
+                                            .abs(),
+                                  ),
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+
+                      // Play/Pause icon
+                      Center(
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                          child: Icon(
+                            widget.isPlaying ? Icons.pause : Icons.play_arrow,
+                            color: MusicAppTheme.primaryPurple,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRegularAlbumArt(ThemeData theme) {
     return Container(
       width: 56,
       height: 56,
@@ -213,7 +371,6 @@ class _SongListTileState extends State<SongListTile>
             else
               _buildDefaultArtwork(theme),
 
-            // Play/pause overlay for current song
             if (widget.isCurrentSong)
               Container(
                 decoration: BoxDecoration(
@@ -234,6 +391,28 @@ class _SongListTileState extends State<SongListTile>
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDefaultGlassArtwork() {
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withOpacity(0.2),
+            Colors.white.withOpacity(0.1),
+          ],
+        ),
+      ),
+      child: Icon(
+        Icons.music_note_rounded,
+        color: Colors.white.withOpacity(0.8),
+        size: 28,
       ),
     );
   }
@@ -260,40 +439,132 @@ class _SongListTileState extends State<SongListTile>
     );
   }
 
+  Widget _buildSongInfo(ThemeData theme) {
+    final textColor = widget.useGlass
+        ? Colors.white
+        : theme.colorScheme.onSurface;
+    final secondaryColor = widget.useGlass
+        ? Colors.white.withOpacity(0.8)
+        : theme.colorScheme.onSurface.withOpacity(0.7);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Title
+        Text(
+          widget.song.title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: widget.isCurrentSong
+                ? FontWeight.w600
+                : FontWeight.w500,
+            color: widget.isCurrentSong && widget.useGlass
+                ? Colors.white
+                : (widget.isCurrentSong
+                      ? MusicAppTheme.primaryPurple
+                      : textColor),
+            height: 1.2,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 6),
+
+        // Artist and metadata row
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                widget.song.artist,
+                style: TextStyle(
+                  color: widget.isCurrentSong && widget.useGlass
+                      ? Colors.white.withOpacity(0.9)
+                      : (widget.isCurrentSong
+                            ? MusicAppTheme.primaryPurple.withOpacity(0.8)
+                            : secondaryColor),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            _buildMetadataRow(theme),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _buildMetadataRow(ThemeData theme) {
+    final isGlass = widget.useGlass;
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (widget.song.isFavorite) ...[
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: isGlass
+                  ? Colors.red.withOpacity(0.2)
+                  : Colors.red.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+              border: isGlass
+                  ? Border.all(color: Colors.red.withOpacity(0.3), width: 1)
+                  : null,
             ),
-            child: Icon(Icons.favorite, size: 12, color: Colors.red[600]),
+            child: Icon(
+              Icons.favorite,
+              size: 12,
+              color: isGlass ? Colors.red[300] : Colors.red[600],
+            ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
         ],
 
         // Duration
-        Text(
-          widget.song.durationString,
-          style: TextStyle(
-            color: theme.colorScheme.onSurface.withOpacity(0.5),
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            fontFeatures: const [FontFeature.tabularFigures()],
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: isGlass
+                ? Colors.white.withOpacity(0.15)
+                : theme.colorScheme.onSurface.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(10),
+            border: isGlass
+                ? Border.all(color: Colors.white.withOpacity(0.2), width: 1)
+                : null,
+          ),
+          child: Text(
+            widget.song.durationString,
+            style: TextStyle(
+              color: isGlass
+                  ? Colors.white.withOpacity(0.9)
+                  : theme.colorScheme.onSurface.withOpacity(0.6),
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
           ),
         ),
 
         if (widget.song.playCount > 0) ...[
           const SizedBox(width: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: theme.primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: isGlass
+                  ? MusicAppTheme.primaryPurple.withOpacity(0.2)
+                  : theme.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+              border: isGlass
+                  ? Border.all(
+                      color: MusicAppTheme.primaryPurple.withOpacity(0.3),
+                      width: 1,
+                    )
+                  : null,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -301,13 +572,17 @@ class _SongListTileState extends State<SongListTile>
                 Icon(
                   Icons.play_circle_outline,
                   size: 10,
-                  color: theme.primaryColor,
+                  color: isGlass
+                      ? Colors.white.withOpacity(0.9)
+                      : theme.primaryColor,
                 ),
-                const SizedBox(width: 3),
+                const SizedBox(width: 4),
                 Text(
                   widget.song.playCount.toString(),
                   style: TextStyle(
-                    color: theme.primaryColor,
+                    color: isGlass
+                        ? Colors.white.withOpacity(0.9)
+                        : theme.primaryColor,
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),
@@ -320,7 +595,51 @@ class _SongListTileState extends State<SongListTile>
     );
   }
 
-  Widget _buildTrailingActions(ThemeData theme) {
+  Widget _buildGlassTrailingActions(ThemeData theme) {
+    if (widget.isCurrentSong && widget.isPlaying) {
+      return SizedBox(
+        width: 44,
+        height: 44,
+        child: Stack(
+          children: [
+            GlassContainer(
+              width: 44,
+              height: 44,
+              borderRadius: BorderRadius.circular(22),
+              color: Colors.white.withOpacity(0.1),
+              child: Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return GlassButton(
+      onPressed: widget.onMorePressed,
+      width: 44,
+      height: 44,
+      borderRadius: BorderRadius.circular(22),
+      color: Colors.white.withOpacity(0.1),
+      child: Icon(
+        Icons.more_vert_rounded,
+        size: 20,
+        color: Colors.white.withOpacity(0.8),
+      ),
+    );
+  }
+
+  Widget _buildRegularTrailingActions(ThemeData theme) {
     if (widget.isCurrentSong && widget.isPlaying) {
       return Container(
         width: 40,
@@ -350,7 +669,7 @@ class _SongListTileState extends State<SongListTile>
         child: Container(
           width: 40,
           height: 40,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.transparent,
           ),

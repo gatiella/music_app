@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:music_app/data/models/song.dart';
 import 'package:on_audio_query/on_audio_query.dart';

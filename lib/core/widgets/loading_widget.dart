@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:music_app/app/glassmorphism_widgets.dart';
+import 'package:music_app/app/theme.dart';
 
 class LoadingWidget extends StatelessWidget {
   final String? message;
   final double size;
   final Color? color;
   final bool showMessage;
+  final bool useGlass;
 
   const LoadingWidget({
     super.key,
@@ -12,38 +15,49 @@ class LoadingWidget extends StatelessWidget {
     this.size = 50.0,
     this.color,
     this.showMessage = true,
+    this.useGlass = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: size,
-            height: size,
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                color ?? Theme.of(context).primaryColor,
-              ),
-            ),
+    final theme = Theme.of(context);
+    final loadingColor = color ?? MusicAppTheme.primaryPurple;
+
+    Widget content = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          width: size,
+          height: size,
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(loadingColor),
+            strokeWidth: 3,
           ),
-          if (showMessage && message != null) ...[
-            const SizedBox(height: 16),
-            Text(
-              message!,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.color?.withOpacity(0.7),
-              ),
-              textAlign: TextAlign.center,
+        ),
+        if (showMessage && message != null) ...[
+          const SizedBox(height: 16),
+          Text(
+            message!,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: useGlass ? Colors.white : null,
+              fontWeight: FontWeight.w500,
             ),
-          ],
+            textAlign: TextAlign.center,
+          ),
         ],
-      ),
+      ],
     );
+
+    if (useGlass) {
+      return Center(
+        child: GlassContainer(
+          padding: const EdgeInsets.all(24),
+          child: content,
+        ),
+      );
+    }
+
+    return Center(child: content);
   }
 }
 
@@ -51,12 +65,14 @@ class PulsingLoadingWidget extends StatefulWidget {
   final double size;
   final Color? color;
   final Duration duration;
+  final bool useGlass;
 
   const PulsingLoadingWidget({
     super.key,
     this.size = 50.0,
     this.color,
     this.duration = const Duration(milliseconds: 1000),
+    this.useGlass = false,
   });
 
   @override
@@ -87,29 +103,42 @@ class _PulsingLoadingWidgetState extends State<PulsingLoadingWidget>
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: AnimatedBuilder(
-        animation: _animation,
-        builder: (context, child) {
-          return Opacity(
-            opacity: _animation.value,
-            child: Container(
-              width: widget.size,
-              height: widget.size,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: widget.color ?? Theme.of(context).primaryColor,
-              ),
-              child: const Icon(
-                Icons.music_note,
-                color: Colors.white,
-                size: 24,
-              ),
+    final pulseColor = widget.color ?? MusicAppTheme.primaryPurple;
+
+    Widget content = AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Container(
+          width: widget.size * (0.8 + _animation.value * 0.4),
+          height: widget.size * (0.8 + _animation.value * 0.4),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [pulseColor, MusicAppTheme.accentPink],
             ),
-          );
-        },
-      ),
+            boxShadow: [
+              BoxShadow(
+                color: pulseColor.withOpacity(0.4 * _animation.value),
+                blurRadius: 20 * _animation.value,
+                spreadRadius: 5 * _animation.value,
+              ),
+            ],
+          ),
+          child: const Icon(Icons.music_note, color: Colors.white, size: 24),
+        );
+      },
     );
+
+    if (widget.useGlass) {
+      return Center(
+        child: GlassContainer(
+          padding: const EdgeInsets.all(24),
+          child: content,
+        ),
+      );
+    }
+
+    return Center(child: content);
   }
 }
 
@@ -117,12 +146,14 @@ class DotsLoadingWidget extends StatefulWidget {
   final Color? color;
   final double dotSize;
   final Duration duration;
+  final bool useGlass;
 
   const DotsLoadingWidget({
     super.key,
     this.color,
     this.dotSize = 8.0,
     this.duration = const Duration(milliseconds: 600),
+    this.useGlass = false,
   });
 
   @override
@@ -171,36 +202,58 @@ class _DotsLoadingWidgetState extends State<DotsLoadingWidget>
 
   @override
   Widget build(BuildContext context) {
-    final color = widget.color ?? Theme.of(context).primaryColor;
+    final colors = [
+      MusicAppTheme.primaryPurple,
+      MusicAppTheme.primaryBlue,
+      MusicAppTheme.accentPink,
+    ];
 
-    return Center(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: List.generate(3, (index) {
-          return Padding(
-            padding: EdgeInsets.symmetric(horizontal: widget.dotSize / 4),
-            child: AnimatedBuilder(
-              animation: _animations[index],
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: 0.5 + (_animations[index].value * 0.5),
-                  child: Container(
-                    width: widget.dotSize,
-                    height: widget.dotSize,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: color.withOpacity(
-                        0.5 + (_animations[index].value * 0.5),
-                      ),
+    Widget content = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(3, (index) {
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: widget.dotSize / 4),
+          child: AnimatedBuilder(
+            animation: _animations[index],
+            builder: (context, child) {
+              return Transform.scale(
+                scale: 0.5 + (_animations[index].value * 0.5),
+                child: Container(
+                  width: widget.dotSize,
+                  height: widget.dotSize,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: colors[index % colors.length].withOpacity(
+                      0.5 + (_animations[index].value * 0.5),
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: colors[index % colors.length].withOpacity(
+                          0.3 * _animations[index].value,
+                        ),
+                        blurRadius: 8 * _animations[index].value,
+                        spreadRadius: 2 * _animations[index].value,
+                      ),
+                    ],
                   ),
-                );
-              },
-            ),
-          );
-        }),
-      ),
+                ),
+              );
+            },
+          ),
+        );
+      }),
     );
+
+    if (widget.useGlass) {
+      return Center(
+        child: GlassContainer(
+          padding: const EdgeInsets.all(24),
+          child: content,
+        ),
+      );
+    }
+
+    return Center(child: content);
   }
 }
 
@@ -208,12 +261,14 @@ class SkeletonLoadingWidget extends StatefulWidget {
   final double width;
   final double height;
   final double borderRadius;
+  final bool useGlass;
 
   const SkeletonLoadingWidget({
     super.key,
     required this.width,
     required this.height,
     this.borderRadius = 8.0,
+    this.useGlass = false,
   });
 
   @override
@@ -247,11 +302,18 @@ class _SkeletonLoadingWidgetState extends State<SkeletonLoadingWidget>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
-    final highlightColor = isDark ? Colors.grey[700]! : Colors.grey[100]!;
+    final theme = Theme.of(context);
+    final customColors = theme.customColors;
+    final isDark = theme.brightness == Brightness.dark;
 
-    return Container(
+    final baseColor = isDark
+        ? customColors.glassContainer.withOpacity(0.1)
+        : Colors.grey[300]!;
+    final highlightColor = isDark
+        ? customColors.glassContainer.withOpacity(0.2)
+        : Colors.grey[100]!;
+
+    Widget content = Container(
       width: widget.width,
       height: widget.height,
       decoration: BoxDecoration(
@@ -284,43 +346,78 @@ class _SkeletonLoadingWidgetState extends State<SkeletonLoadingWidget>
         ),
       ),
     );
+
+    if (widget.useGlass) {
+      return GlassContainer(
+        width: widget.width,
+        height: widget.height,
+        padding: EdgeInsets.zero,
+        borderRadius: BorderRadius.circular(widget.borderRadius),
+        child: content,
+      );
+    }
+
+    return content;
   }
 }
 
 class SongItemSkeleton extends StatelessWidget {
-  const SongItemSkeleton({super.key});
+  final bool useGlass;
+
+  const SongItemSkeleton({super.key, this.useGlass = false});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    Widget content = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          const SkeletonLoadingWidget(width: 50, height: 50, borderRadius: 8),
+          SkeletonLoadingWidget(
+            width: 50,
+            height: 50,
+            borderRadius: 8,
+            useGlass: false,
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SkeletonLoadingWidget(
+                SkeletonLoadingWidget(
                   width: double.infinity,
                   height: 16,
                   borderRadius: 4,
+                  useGlass: false,
                 ),
                 const SizedBox(height: 8),
                 SkeletonLoadingWidget(
                   width: MediaQuery.of(context).size.width * 0.6,
                   height: 14,
                   borderRadius: 4,
+                  useGlass: false,
                 ),
               ],
             ),
           ),
           const SizedBox(width: 16),
-          const SkeletonLoadingWidget(width: 40, height: 16, borderRadius: 4),
+          SkeletonLoadingWidget(
+            width: 40,
+            height: 16,
+            borderRadius: 4,
+            useGlass: false,
+          ),
         ],
       ),
     );
+
+    if (useGlass) {
+      return GlassContainer(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: content,
+      );
+    }
+
+    return content;
   }
 }
 
@@ -329,6 +426,7 @@ class LoadingOverlay extends StatelessWidget {
   final Widget child;
   final String? loadingMessage;
   final Color? overlayColor;
+  final bool useGlass;
 
   const LoadingOverlay({
     super.key,
@@ -336,6 +434,7 @@ class LoadingOverlay extends StatelessWidget {
     required this.child,
     this.loadingMessage,
     this.overlayColor,
+    this.useGlass = true,
   });
 
   @override
@@ -345,8 +444,12 @@ class LoadingOverlay extends StatelessWidget {
         child,
         if (isLoading)
           Container(
-            color: overlayColor ?? Colors.black.withOpacity(0.5),
-            child: LoadingWidget(message: loadingMessage, color: Colors.white),
+            color: overlayColor ?? Colors.black.withOpacity(0.3),
+            child: LoadingWidget(
+              message: loadingMessage,
+              color: Colors.white,
+              useGlass: useGlass,
+            ),
           ),
       ],
     );
@@ -357,34 +460,82 @@ class RefreshLoadingWidget extends StatelessWidget {
   final VoidCallback onRefresh;
   final bool isLoading;
   final String? message;
+  final bool useGlass;
 
   const RefreshLoadingWidget({
     super.key,
     required this.onRefresh,
     this.isLoading = false,
     this.message,
+    this.useGlass = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (isLoading) ...[
-            const LoadingWidget(message: 'Refreshing...'),
-          ] else ...[
-            Icon(Icons.refresh, size: 64, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            Text(
-              message ?? 'Pull to refresh',
-              style: TextStyle(color: Colors.grey[600], fontSize: 16),
+    final theme = Theme.of(context);
+
+    Widget content = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (isLoading) ...[
+          const PulsingLoadingWidget(useGlass: false),
+          const SizedBox(height: 16),
+          Text(
+            'Refreshing...',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: useGlass ? Colors.white : null,
+              fontWeight: FontWeight.w500,
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(onPressed: onRefresh, child: const Text('Refresh')),
-          ],
+          ),
+        ] else ...[
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  MusicAppTheme.primaryPurple.withOpacity(0.3),
+                  MusicAppTheme.accentPink.withOpacity(0.3),
+                ],
+              ),
+            ),
+            child: const Icon(Icons.refresh, size: 32, color: Colors.white),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            message ?? 'Pull to refresh',
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: useGlass
+                  ? Colors.white
+                  : theme.textTheme.bodyMedium?.color,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 16),
+          GlassButton(
+            onPressed: onRefresh,
+            child: Text(
+              'Refresh',
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ],
-      ),
+      ],
     );
+
+    if (useGlass) {
+      return Center(
+        child: GlassContainer(
+          padding: const EdgeInsets.all(32),
+          child: content,
+        ),
+      );
+    }
+
+    return Center(child: content);
   }
 }

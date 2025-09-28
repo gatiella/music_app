@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:music_app/presentation/screens/home/widgets/song_list_tile.dart';
+import 'package:music_app/app/glassmorphism_widgets.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_library_provider.dart';
 import '../../providers/audio_player_provider.dart';
@@ -58,33 +58,50 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: TextField(
-          controller: _searchController,
-          decoration: const InputDecoration(
-            hintText: 'Search songs, artists, albums...',
-            border: InputBorder.none,
-            hintStyle: TextStyle(color: Colors.grey),
+    return GradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: GlassAppBar(
+          title: null,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
           ),
-          autofocus: true,
+          actions: [
+            if (_searchController.text.isNotEmpty)
+              IconButton(
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() {
+                    _searchResults = [];
+                    _isSearching = false;
+                    _searchQuery = '';
+                  });
+                },
+                icon: const Icon(Icons.clear, color: Colors.white),
+              ),
+          ],
         ),
-        actions: [
-          if (_searchController.text.isNotEmpty)
-            IconButton(
-              onPressed: () {
-                _searchController.clear();
-                setState(() {
-                  _searchResults = [];
-                  _isSearching = false;
-                  _searchQuery = '';
-                });
-              },
-              icon: const Icon(Icons.clear),
+        body: Column(
+          children: [
+            // Search Input
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: GlassTextField(
+                controller: _searchController,
+                hintText: 'Search songs, artists, albums...',
+                prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+              ),
             ),
-        ],
+            // Body Content
+            Expanded(child: _buildBody()),
+          ],
+        ),
       ),
-      body: _buildBody(),
     );
   }
 
@@ -108,34 +125,42 @@ class _SearchScreenState extends State<SearchScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Recent Searches',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+              _buildSectionTitle('Recent Searches'),
               const SizedBox(height: 16),
-              // You can implement recent searches here
-              const Text(
-                'No recent searches',
-                style: TextStyle(color: Colors.grey),
+              GlassContainer(
+                padding: const EdgeInsets.all(20),
+                child: const Center(
+                  child: Text(
+                    'No recent searches',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ),
               ),
               const SizedBox(height: 32),
-              const Text(
-                'Browse by Genre',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+              _buildSectionTitle('Browse by Genre'),
               const SizedBox(height: 16),
               _buildGenreGrid(libraryProvider),
               const SizedBox(height: 32),
-              const Text(
-                'Quick Search',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+              _buildSectionTitle('Quick Search'),
               const SizedBox(height: 16),
               _buildQuickSearchOptions(),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 
@@ -147,9 +172,14 @@ class _SearchScreenState extends State<SearchScreen> {
         .toList();
 
     if (genres.isEmpty) {
-      return const Text(
-        'No genres available',
-        style: TextStyle(color: Colors.grey),
+      return GlassContainer(
+        padding: const EdgeInsets.all(20),
+        child: const Center(
+          child: Text(
+            'No genres available',
+            style: TextStyle(color: Colors.white70),
+          ),
+        ),
       );
     }
 
@@ -165,19 +195,38 @@ class _SearchScreenState extends State<SearchScreen> {
       itemCount: genres.length,
       itemBuilder: (context, index) {
         final genre = genres[index];
-        return Card(
-          child: InkWell(
-            onTap: () {
-              _searchController.text = genre;
-              _onSearchChanged();
-            },
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              child: Center(
-                child: Text(
-                  genre,
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                  textAlign: TextAlign.center,
+        return GlassContainer(
+          padding: EdgeInsets.zero,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () {
+                _searchController.text = genre;
+                _onSearchChanged();
+              },
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.white.withOpacity(0.1),
+                      Colors.white.withOpacity(0.05),
+                    ],
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    genre,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
             ),
@@ -200,15 +249,44 @@ class _SearchScreenState extends State<SearchScreen> {
     ];
 
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: 12,
+      runSpacing: 12,
       children: quickSearches.map((search) {
-        return ActionChip(
-          label: Text(search),
-          onPressed: () {
-            _searchController.text = search;
-            _onSearchChanged();
-          },
+        return GlassContainer(
+          padding: EdgeInsets.zero,
+          borderRadius: BorderRadius.circular(25),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(25),
+              onTap: () {
+                _searchController.text = search;
+                _onSearchChanged();
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(25),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.white.withOpacity(0.15),
+                      Colors.white.withOpacity(0.05),
+                    ],
+                  ),
+                ),
+                child: Text(
+                  search,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          ),
         );
       }).toList(),
     );
@@ -216,21 +294,41 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildNoResultsView() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            'No results found for "$_searchQuery"',
-            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Try searching with different keywords',
-            style: TextStyle(color: Colors.grey[500]),
-          ),
-        ],
+      child: GlassContainer(
+        padding: const EdgeInsets.all(40),
+        margin: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.1),
+              ),
+              child: const Icon(
+                Icons.search_off,
+                size: 48,
+                color: Colors.white70,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'No results found for "$_searchQuery"',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Try searching with different keywords',
+              style: TextStyle(color: Colors.white70),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -241,31 +339,59 @@ class _SearchScreenState extends State<SearchScreen> {
         return Column(
           children: [
             // Search results header
-            Container(
+            GlassContainer(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
                   Text(
                     '${_searchResults.length} result${_searchResults.length == 1 ? '' : 's'}',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                   const Spacer(),
                   if (_searchResults.isNotEmpty) ...[
-                    TextButton.icon(
+                    GlassButton(
                       onPressed: () {
                         audioProvider.playPlaylist(_searchResults);
                       },
-                      icon: const Icon(Icons.play_arrow, size: 18),
-                      label: const Text('Play All'),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.play_arrow, size: 18, color: Colors.white),
+                          SizedBox(width: 4),
+                          Text(
+                            'Play All',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
                     ),
-                    TextButton.icon(
+                    const SizedBox(width: 8),
+                    GlassButton(
                       onPressed: () {
                         final shuffled = List<Song>.from(_searchResults);
                         shuffled.shuffle();
                         audioProvider.playPlaylist(shuffled);
                       },
-                      icon: const Icon(Icons.shuffle, size: 18),
-                      label: const Text('Shuffle'),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.shuffle, size: 18, color: Colors.white),
+                          SizedBox(width: 4),
+                          Text(
+                            'Shuffle',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ],
@@ -274,25 +400,66 @@ class _SearchScreenState extends State<SearchScreen> {
             // Search results list
             Expanded(
               child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: _searchResults.length,
                 itemBuilder: (context, index) {
                   final song = _searchResults[index];
                   final isCurrentSong =
                       audioProvider.currentSong?.id == song.id;
 
-                  return SongListTile(
-                    song: song,
-                    isCurrentSong: isCurrentSong,
-                    isPlaying: isCurrentSong && audioProvider.isPlaying,
+                  return GlassMusicCard(
+                    leading: Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white.withOpacity(0.1),
+                      ),
+                      child: song.albumArt != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                song.albumArt!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(
+                                    Icons.music_note,
+                                    color: Colors.white70,
+                                    size: 24,
+                                  );
+                                },
+                              ),
+                            )
+                          : const Icon(
+                              Icons.music_note,
+                              color: Colors.white70,
+                              size: 24,
+                            ),
+                    ),
+                    title: song.title,
+                    subtitle: '${song.artist} • ${song.album}',
+                    trailing: GestureDetector(
+                      onTap: () => _showSongOptions(context, song),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withOpacity(0.1),
+                        ),
+                        child: const Icon(
+                          Icons.more_vert,
+                          color: Colors.white70,
+                          size: 20,
+                        ),
+                      ),
+                    ),
                     onTap: () {
                       audioProvider.playPlaylist(
                         _searchResults,
                         startIndex: index,
                       );
                     },
-                    onMorePressed: () {
-                      _showSongOptions(context, song);
-                    },
+                    isPlaying: isCurrentSong && audioProvider.isPlaying,
                   );
                 },
               ),
@@ -306,88 +473,127 @@ class _SearchScreenState extends State<SearchScreen> {
   void _showSongOptions(BuildContext context, Song song) {
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
+      backgroundColor: Colors.transparent,
+      builder: (context) => GlassContainer(
+        margin: const EdgeInsets.all(16),
+        borderRadius: BorderRadius.circular(24),
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              contentPadding: EdgeInsets.zero,
+            // Song Info Header
+            GlassMusicCard(
               leading: Container(
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white.withOpacity(0.1),
                 ),
                 child: song.albumArt != null
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                         child: Image.network(
                           song.albumArt!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            return Icon(
+                            return const Icon(
                               Icons.music_note,
-                              color: Colors.grey[600],
+                              color: Colors.white70,
+                              size: 24,
                             );
                           },
                         ),
                       )
-                    : Icon(Icons.music_note, color: Colors.grey[600]),
+                    : const Icon(
+                        Icons.music_note,
+                        color: Colors.white70,
+                        size: 24,
+                      ),
               ),
-              title: Text(
-                song.title,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text('${song.artist} • ${song.album}'),
+              title: song.title,
+              subtitle: '${song.artist} • ${song.album}',
+              height: 70,
+              padding: const EdgeInsets.all(16),
             ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.play_arrow),
-              title: const Text('Play'),
-              onTap: () {
-                Navigator.pop(context);
-                context.read<AudioPlayerProvider>().playSong(song);
-              },
+
+            Container(
+              height: 1,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              color: Colors.white.withOpacity(0.1),
             ),
-            ListTile(
-              leading: const Icon(Icons.queue),
-              title: const Text('Add to Queue'),
-              onTap: () {
-                Navigator.pop(context);
-                context.read<AudioPlayerProvider>().addToQueue(song);
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('Added to queue')));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.playlist_add),
-              title: const Text('Add to Playlist'),
-              onTap: () {
-                Navigator.pop(context);
-                // Show playlist selection
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.album),
-              title: const Text('Go to Album'),
-              onTap: () {
-                Navigator.pop(context);
-                _searchController.text = song.album;
-                _onSearchChanged();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text('Go to Artist'),
-              onTap: () {
-                Navigator.pop(context);
-                _searchController.text = song.artist;
-                _onSearchChanged();
-              },
-            ),
+
+            // Action Items
+            ...[
+                  {
+                    'icon': Icons.play_arrow,
+                    'title': 'Play',
+                    'action': () {
+                      Navigator.pop(context);
+                      context.read<AudioPlayerProvider>().playSong(song);
+                    },
+                  },
+                  {
+                    'icon': Icons.queue,
+                    'title': 'Add to Queue',
+                    'action': () {
+                      Navigator.pop(context);
+                      context.read<AudioPlayerProvider>().addToQueue(song);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('Added to queue'),
+                          backgroundColor: Colors.black.withOpacity(0.8),
+                        ),
+                      );
+                    },
+                  },
+                  {
+                    'icon': Icons.playlist_add,
+                    'title': 'Add to Playlist',
+                    'action': () {
+                      Navigator.pop(context);
+                      // Show playlist selection
+                    },
+                  },
+                  {
+                    'icon': Icons.album,
+                    'title': 'Go to Album',
+                    'action': () {
+                      Navigator.pop(context);
+                      _searchController.text = song.album;
+                      _onSearchChanged();
+                    },
+                  },
+                  {
+                    'icon': Icons.person,
+                    'title': 'Go to Artist',
+                    'action': () {
+                      Navigator.pop(context);
+                      _searchController.text = song.artist;
+                      _onSearchChanged();
+                    },
+                  },
+                ]
+                .map(
+                  (item) => GlassMusicCard(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        item['icon'] as IconData,
+                        color: Colors.white,
+                      ),
+                    ),
+                    title: item['title'] as String,
+                    onTap: item['action'] as VoidCallback,
+                    height: 60,
+                    padding: const EdgeInsets.all(12),
+                  ),
+                )
+                ,
           ],
         ),
       ),

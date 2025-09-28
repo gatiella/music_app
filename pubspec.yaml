@@ -45,11 +45,11 @@ dependencies:
   shared_preferences: ^2.5.3
   http: ^1.5.0
   path: ^1.9.1
-  on_audio_query: ^2.9.0
   flutter_lints: ^6.0.0
   provider: ^6.1.5+1
 
   sqflite: any
+  on_audio_query: ^2.9.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
