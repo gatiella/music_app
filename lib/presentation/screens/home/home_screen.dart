@@ -210,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(
-                colors: [Theme.of(context).colorScheme.onPrimary.withOpacity(0.2), Colors.transparent],
+                colors: [Theme.of(context).colorScheme.onPrimary.withAlpha((0.2 * 255).toInt()), Colors.transparent],
               ),
             ),
           ),

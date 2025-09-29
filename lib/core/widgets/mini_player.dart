@@ -200,7 +200,7 @@ class _MiniPlayerState extends State<MiniPlayer>
                     onPressed: null,
                     icon: Icon(
                       Icons.skip_previous_rounded,
-                      color: theme.colorScheme.onPrimary.withOpacity(0.5),
+                      color: theme.colorScheme.onPrimary.withAlpha((0.5 * 255).toInt()),
                       size: 28,
                     ),
                   ),
@@ -213,7 +213,7 @@ class _MiniPlayerState extends State<MiniPlayer>
                     ),
                     child: Icon(
                       Icons.play_arrow,
-                      color: theme.colorScheme.onPrimary.withOpacity(0.8),
+                      color: theme.colorScheme.onPrimary.withAlpha((0.8 * 255).toInt()),
                       size: 24,
                     ),
                   ),
@@ -221,7 +221,7 @@ class _MiniPlayerState extends State<MiniPlayer>
                     onPressed: null,
                     icon: Icon(
                       Icons.skip_next_rounded,
-                      color: theme.colorScheme.onPrimary.withOpacity(0.5),
+                      color: theme.colorScheme.onPrimary.withAlpha((0.5 * 255).toInt()),
                       size: 28,
                     ),
                   ),
@@ -295,7 +295,7 @@ class _CustomMiniPlayerState extends State<CustomMiniPlayer> {
                 if (widget.showProgress)
                   LinearProgressIndicator(
                     value: audioProvider.progress.clamp(0.0, 1.0),
-                    backgroundColor: Colors.white.withOpacity(0.2),
+                    backgroundColor: Colors.white.withAlpha((0.2 * 255).toInt()),
                     valueColor: AlwaysStoppedAnimation<Color>(
                       MusicAppTheme.primaryPurple,
                     ),
@@ -353,7 +353,7 @@ class _CustomMiniPlayerState extends State<CustomMiniPlayer> {
       height: 50,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: Colors.grey.withOpacity(0.3),
+  color: Colors.grey.withAlpha((0.3 * 255).toInt()),
         image: currentSong.albumArt != null
             ? DecorationImage(
                 image: NetworkImage(currentSong.albumArt!),
@@ -386,7 +386,7 @@ class _CustomMiniPlayerState extends State<CustomMiniPlayer> {
         Text(
           currentSong.artist,
           style: theme.textTheme.bodySmall?.copyWith(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withAlpha((0.7 * 255).toInt()),
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -407,7 +407,7 @@ class _CustomMiniPlayerState extends State<CustomMiniPlayer> {
             Icons.skip_previous_rounded,
             color: audioProvider.hasPrevious
                 ? Colors.white
-                : Colors.white.withOpacity(0.5),
+                : Colors.white.withAlpha((0.5 * 255).toInt()),
             size: 28,
           ),
         ),
@@ -437,7 +437,7 @@ class _CustomMiniPlayerState extends State<CustomMiniPlayer> {
             Icons.skip_next_rounded,
             color: audioProvider.hasNext
                 ? Colors.white
-                : Colors.white.withOpacity(0.5),
+                : Colors.white.withAlpha((0.5 * 255).toInt()),
             size: 28,
           ),
         ),

@@ -46,7 +46,7 @@ class GlassContainer extends StatelessWidget {
             boxShadow ??
             [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withAlpha((0.1 * 255).toInt()),
                 blurRadius: 20,
                 spreadRadius: 0,
                 offset: const Offset(0, 10),
@@ -188,7 +188,7 @@ class GlassBottomPlayer extends StatelessWidget {
             // Progress bar
             LinearProgressIndicator(
               value: progress,
-              backgroundColor: Colors.white.withOpacity(0.2),
+              backgroundColor: Colors.white.withAlpha((0.2 * 255).toInt()),
               valueColor: AlwaysStoppedAnimation<Color>(
                 MusicAppTheme.primaryPurple,
               ),
@@ -203,7 +203,7 @@ class GlassBottomPlayer extends StatelessWidget {
                   height: 50,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: Colors.grey.withOpacity(0.3),
+                    color: Colors.grey.withAlpha((0.3 * 255).toInt()),
                     image: albumArt != null
                         ? DecorationImage(
                             image: NetworkImage(albumArt!),
@@ -238,7 +238,7 @@ class GlassBottomPlayer extends StatelessWidget {
                       Text(
                         artist,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withAlpha((0.7 * 255).toInt()),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -335,7 +335,7 @@ class GlassBottomNavBar extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 color: isSelected
-                    ? Colors.white.withOpacity(0.2)
+                    ? Colors.white.withAlpha((0.2 * 255).toInt())
                     : Colors.transparent,
               ),
               child: Row(
@@ -345,7 +345,7 @@ class GlassBottomNavBar extends StatelessWidget {
                     isSelected ? item.activeIcon : item.icon,
                     color: isSelected
                         ? Colors.white
-                        : Colors.white.withOpacity(0.6),
+                        : Colors.white.withAlpha((0.6 * 255).toInt()),
                     size: 24,
                   ),
                   if (isSelected && item.label != null) ...[
@@ -481,10 +481,10 @@ class GlassButton extends StatelessWidget {
                   gradient ??
                   LinearGradient(
                     colors: [
-                      color?.withOpacity(0.3) ??
-                          MusicAppTheme.primaryPurple.withOpacity(0.3),
-                      color?.withOpacity(0.1) ??
-                          MusicAppTheme.primaryPurple.withOpacity(0.1),
+            color?.withAlpha((0.3 * 255).toInt()) ??
+              MusicAppTheme.primaryPurple.withAlpha((0.3 * 255).toInt()),
+            color?.withAlpha((0.1 * 255).toInt()) ??
+              MusicAppTheme.primaryPurple.withAlpha((0.1 * 255).toInt()),
                     ],
                   ),
             ),
@@ -535,7 +535,7 @@ class GlassTextField extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: theme.textTheme.bodyLarge?.copyWith(
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withAlpha((0.6 * 255).toInt()),
           ),
           prefixIcon: prefixIcon,
           suffixIcon: suffixIcon,

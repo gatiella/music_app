@@ -112,7 +112,7 @@ class _LibraryScreenState extends State<LibraryScreen>
             const SizedBox(height: 8),
             Text(
               'Please wait while we scan your device',
-              style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onPrimary.withOpacity(0.7)),
+              style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onPrimary.withValues(alpha: 0.7)),
               textAlign: TextAlign.center,
             ),
           ],
@@ -133,7 +133,7 @@ class _LibraryScreenState extends State<LibraryScreen>
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
               ),
               child: const Icon(
                 Icons.music_off,
@@ -163,8 +163,8 @@ class _LibraryScreenState extends State<LibraryScreen>
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               gradient: LinearGradient(
                 colors: [
-                  Colors.white.withOpacity(0.2),
-                  Colors.white.withOpacity(0.1),
+                  Colors.white.withValues(alpha: 0.2),
+                  Colors.white.withValues(alpha: 0.1),
                 ],
               ),
               child: Row(
@@ -199,15 +199,15 @@ class _LibraryScreenState extends State<LibraryScreen>
           borderRadius: BorderRadius.circular(20),
           gradient: LinearGradient(
             colors: [
-              Colors.white.withOpacity(0.3),
-              Colors.white.withOpacity(0.2),
+              Colors.white.withValues(alpha: 0.3),
+              Colors.white.withValues(alpha: 0.2),
             ],
           ),
         ),
         indicatorPadding: const EdgeInsets.all(2),
         dividerColor: Colors.transparent,
         labelColor: Colors.white,
-        unselectedLabelColor: Colors.white.withOpacity(0.6),
+  unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
         labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         unselectedLabelStyle: const TextStyle(
           fontSize: 14,
@@ -299,7 +299,7 @@ class _LibraryScreenState extends State<LibraryScreen>
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
@@ -316,7 +316,7 @@ class _LibraryScreenState extends State<LibraryScreen>
                     Container(
                       height: 1,
                       margin: const EdgeInsets.symmetric(horizontal: 16),
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                     ),
                 ],
               );

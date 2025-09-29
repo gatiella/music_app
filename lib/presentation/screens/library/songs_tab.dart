@@ -120,12 +120,12 @@ class SongsTab extends StatelessWidget {
                           errorBuilder: (context, error, stackTrace) {
                             return Icon(
                               Icons.music_note,
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                             );
                           },
                         ),
                       )
-                    : Icon(Icons.music_note, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
+                    : Icon(Icons.music_note, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
               ),
               title: Text(
                 song.title,

@@ -210,9 +210,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   gradient: LinearGradient(
-                    colors: [
-                      Colors.white.withOpacity(0.1),
-                      Colors.white.withOpacity(0.05),
+                      colors: [
+                        Colors.white.withValues(alpha: 0.1),
+                        Colors.white.withValues(alpha: 0.05),
                     ],
                   ),
                 ),
@@ -271,9 +271,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(25),
                   gradient: LinearGradient(
-                    colors: [
-                      Colors.white.withOpacity(0.15),
-                      Colors.white.withOpacity(0.05),
+                      colors: [
+                        Colors.white.withValues(alpha: 0.15),
+                        Colors.white.withValues(alpha: 0.05),
                     ],
                   ),
                 ),
@@ -304,7 +304,7 @@ class _SearchScreenState extends State<SearchScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.1),
+                 color: Colors.white.withValues(alpha: 0.1),
               ),
               child: const Icon(
                 Icons.search_off,
@@ -413,7 +413,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       height: 50,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withAlpha((0.1 * 255).toInt()),
                       ),
                       child: song.albumArt != null
                           ? ClipRRect(
@@ -444,7 +444,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.1),
+                           color: Colors.white.withValues(alpha: 0.1),
                         ),
                         child: const Icon(
                           Icons.more_vert,
@@ -488,7 +488,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 height: 50,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withAlpha((0.1 * 255).toInt()),
                 ),
                 child: song.albumArt != null
                     ? ClipRRect(
@@ -520,7 +520,7 @@ class _SearchScreenState extends State<SearchScreen> {
             Container(
               height: 1,
               margin: const EdgeInsets.symmetric(vertical: 8),
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withAlpha((0.1 * 255).toInt()),
             ),
 
             // Action Items
@@ -542,7 +542,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: const Text('Added to queue'),
-                          backgroundColor: Colors.black.withOpacity(0.8),
+                          backgroundColor: Colors.black.withAlpha((0.8 * 255).toInt()),
                         ),
                       );
                     },
@@ -579,7 +579,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withAlpha((0.1 * 255).toInt()),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(

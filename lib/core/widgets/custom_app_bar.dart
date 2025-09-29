@@ -402,7 +402,7 @@ class CollapsibleAppBar extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                  colors: [Colors.transparent, Colors.black.withAlpha((0.7 * 255).toInt())],
                 ),
               ),
             ),

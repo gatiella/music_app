@@ -118,7 +118,7 @@ class _PulsingLoadingWidgetState extends State<PulsingLoadingWidget>
             ),
             boxShadow: [
               BoxShadow(
-                color: pulseColor.withOpacity(0.4 * _animation.value),
+                color: pulseColor.withAlpha(((0.4 * _animation.value) * 255).toInt()),
                 blurRadius: 20 * _animation.value,
                 spreadRadius: 5 * _animation.value,
               ),
@@ -223,14 +223,10 @@ class _DotsLoadingWidgetState extends State<DotsLoadingWidget>
                   height: widget.dotSize,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: colors[index % colors.length].withOpacity(
-                      0.5 + (_animations[index].value * 0.5),
-                    ),
+                    color: colors[index % colors.length].withAlpha(((0.5 + (_animations[index].value * 0.5)) * 255).toInt()),
                     boxShadow: [
                       BoxShadow(
-                        color: colors[index % colors.length].withOpacity(
-                          0.3 * _animations[index].value,
-                        ),
+                        color: colors[index % colors.length].withAlpha(((0.3 * _animations[index].value) * 255).toInt()),
                         blurRadius: 8 * _animations[index].value,
                         spreadRadius: 2 * _animations[index].value,
                       ),
@@ -306,12 +302,12 @@ class _SkeletonLoadingWidgetState extends State<SkeletonLoadingWidget>
     final customColors = theme.customColors;
     final isDark = theme.brightness == Brightness.dark;
 
-    final baseColor = isDark
-        ? customColors.glassContainer.withOpacity(0.1)
-        : Colors.grey[300]!;
-    final highlightColor = isDark
-        ? customColors.glassContainer.withOpacity(0.2)
-        : Colors.grey[100]!;
+  final baseColor = isDark
+    ? customColors.glassContainer.withAlpha((0.1 * 255).toInt())
+    : Colors.grey[300]!;
+  final highlightColor = isDark
+    ? customColors.glassContainer.withAlpha((0.2 * 255).toInt())
+    : Colors.grey[100]!;
 
     Widget content = Container(
       width: widget.width,
@@ -444,7 +440,7 @@ class LoadingOverlay extends StatelessWidget {
         child,
         if (isLoading)
           Container(
-            color: overlayColor ?? Colors.black.withOpacity(0.3),
+            color: overlayColor ?? Colors.black.withAlpha((0.3 * 255).toInt()),
             child: LoadingWidget(
               message: loadingMessage,
               color: Colors.white,
@@ -495,8 +491,8 @@ class RefreshLoadingWidget extends StatelessWidget {
               shape: BoxShape.circle,
               gradient: LinearGradient(
                 colors: [
-                  MusicAppTheme.primaryPurple.withOpacity(0.3),
-                  MusicAppTheme.accentPink.withOpacity(0.3),
+                  MusicAppTheme.primaryPurple.withAlpha((0.3 * 255).toInt()),
+                  MusicAppTheme.accentPink.withAlpha((0.3 * 255).toInt()),
                 ],
               ),
             ),

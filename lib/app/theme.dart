@@ -135,7 +135,7 @@ class MusicAppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         color: lightCard,
-        shadowColor: Colors.black.withOpacity(0.05),
+  shadowColor: Colors.black.withAlpha((0.05 * 255).toInt()),
       ),
 
       // Bottom Navigation Bar Theme
@@ -343,7 +343,7 @@ class MusicAppTheme {
         activeTrackColor: primaryPurple,
         inactiveTrackColor: lightDivider,
         thumbColor: primaryPurple,
-        overlayColor: primaryPurple.withOpacity(0.2),
+  overlayColor: primaryPurple.withAlpha((0.2 * 255).toInt()),
         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
         trackHeight: 6,
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 24),
@@ -381,7 +381,7 @@ class MusicAppTheme {
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return primaryPurple.withOpacity(0.3);
+            return primaryPurple.withAlpha((0.3 * 255).toInt());
           }
           return lightDivider;
         }),
@@ -463,7 +463,7 @@ class MusicAppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         color: darkCard,
-        shadowColor: Colors.black.withOpacity(0.3),
+  shadowColor: Colors.black.withAlpha((0.3 * 255).toInt()),
       ),
 
       // Bottom Navigation Bar Theme
@@ -671,7 +671,7 @@ class MusicAppTheme {
         activeTrackColor: primaryPurple,
         inactiveTrackColor: darkDivider,
         thumbColor: primaryPurple,
-        overlayColor: primaryPurple.withOpacity(0.2),
+  overlayColor: primaryPurple.withAlpha((0.2 * 255).toInt()),
         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
         trackHeight: 6,
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 24),
@@ -709,7 +709,7 @@ class MusicAppTheme {
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return primaryPurple.withOpacity(0.3);
+            return primaryPurple.withAlpha((0.3 * 255).toInt());
           }
           return darkDivider;
         }),
@@ -720,7 +720,7 @@ class MusicAppTheme {
   static MaterialColor _createMaterialColor(Color color) {
     final strengths = <double>[.05];
     final swatch = <int, Color>{};
-    final int r = color.red, g = color.green, b = color.blue;
+  final int r = color.red, g = color.green, b = color.blue;
 
     for (int i = 1; i < 10; i++) {
       strengths.add(0.1 * i);

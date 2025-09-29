@@ -209,7 +209,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(
-                colors: [Theme.of(context).colorScheme.onPrimary.withOpacity(0.1), Colors.transparent],
+                colors: [Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.1), Colors.transparent],
               ),
             ),
           ),
@@ -243,7 +243,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1.5,
-                    color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.9),
+                    color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.9),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -251,7 +251,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                   'From ${currentSong.album ?? 'Unknown Album'}',
                   style: TextStyle(
                     fontSize: 11,
-                    color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
+                    color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -291,12 +291,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: MusicAppTheme.primaryPurple.withOpacity(0.3),
+                        color: MusicAppTheme.primaryPurple.withValues(alpha: 0.3),
                         blurRadius: 30,
                         spreadRadius: 5,
                       ),
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         blurRadius: 20,
                         spreadRadius: 2,
                       ),
@@ -362,7 +362,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             currentSong.artist,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontSize: 18,
-              color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.8),
+              color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
               fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,
@@ -383,9 +383,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
               activeTrackColor: Theme.of(context).primaryColor,
-              inactiveTrackColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.3),
+              inactiveTrackColor: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.3),
               thumbColor: Theme.of(context).primaryColor,
-              overlayColor: Theme.of(context).primaryColor.withOpacity(0.2),
+              overlayColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
               trackHeight: 4,
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
@@ -413,7 +413,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                 audioProvider.positionText,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontSize: 12,
-                  color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.8),
+                  color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -421,7 +421,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                 audioProvider.durationText,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontSize: 12,
-                  color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.8),
+                  color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -446,7 +446,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             borderRadius: BorderRadius.circular(25),
       color: audioProvider.shuffleMode
         ? MusicAppTheme.primaryPurple
-        : Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
+  : Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.2),
             child: Icon(Icons.shuffle, color: Colors.white, size: 24),
           ),
           GlassButton(
@@ -460,7 +460,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
               Icons.skip_previous,
               color: audioProvider.hasPrevious
                   ? Theme.of(context).colorScheme.onPrimary
-                  : Theme.of(context).colorScheme.onPrimary.withOpacity(0.5),
+                  : Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.5),
               size: 32,
             ),
           ),
@@ -500,7 +500,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
               Icons.skip_next,
               color: audioProvider.hasNext
                   ? Theme.of(context).colorScheme.onPrimary
-                  : Theme.of(context).colorScheme.onPrimary.withOpacity(0.5),
+                  : Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.5),
               size: 32,
             ),
           ),
@@ -511,7 +511,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             borderRadius: BorderRadius.circular(25),
       color: audioProvider.loopMode != LoopMode.off
         ? MusicAppTheme.primaryPurple
-        : Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
+  : Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.2),
             child: Icon(
               audioProvider.loopModeIcon,
               color: Theme.of(context).colorScheme.onPrimary,
@@ -549,8 +549,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             height: 50,
             borderRadius: BorderRadius.circular(25),
             color: currentSong.isFavorite
-                ? Theme.of(context).colorScheme.error.withOpacity(0.3)
-                : Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
+                ? Theme.of(context).colorScheme.error.withValues(alpha: 0.3)
+                : Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.2),
             child: Icon(
               currentSong.isFavorite ? Icons.favorite : Icons.favorite_border,
               color: currentSong.isFavorite ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.onPrimary,
@@ -588,7 +588,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
               height: 4,
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.5),
+                  color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(2),
                 ),
             ),
@@ -625,7 +625,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.1),
+          color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(

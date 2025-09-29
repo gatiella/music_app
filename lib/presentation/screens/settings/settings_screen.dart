@@ -60,7 +60,7 @@ class SettingsScreen extends StatelessWidget {
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withAlpha((0.2 * 255).toInt()),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(Icons.palette, color: Colors.white),
@@ -78,13 +78,13 @@ class SettingsScreen extends StatelessWidget {
               Container(
                 height: 1,
                 margin: const EdgeInsets.symmetric(horizontal: 16),
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withAlpha((0.1 * 255).toInt()),
               ),
               GlassMusicCard(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withAlpha((0.2 * 255).toInt()),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(Icons.color_lens, color: Colors.white),
@@ -98,7 +98,7 @@ class SettingsScreen extends StatelessWidget {
                     color: Theme.of(context).primaryColor,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
+                      color: Colors.white.withAlpha((0.3 * 255).toInt()),
                       width: 2,
                     ),
                   ),
@@ -135,7 +135,7 @@ class SettingsScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withAlpha((0.2 * 255).toInt()),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
@@ -157,9 +157,9 @@ class SettingsScreen extends StatelessWidget {
                     SliderTheme(
                       data: SliderTheme.of(context).copyWith(
                         activeTrackColor: Colors.white,
-                        inactiveTrackColor: Colors.white.withOpacity(0.3),
+                        inactiveTrackColor: Colors.white.withAlpha((0.3 * 255).toInt()),
                         thumbColor: Colors.white,
-                        overlayColor: Colors.white.withOpacity(0.2),
+                        overlayColor: Colors.white.withAlpha((0.2 * 255).toInt()),
                         trackHeight: 4,
                       ),
                       child: Slider(
@@ -175,13 +175,13 @@ class SettingsScreen extends StatelessWidget {
               Container(
                 height: 1,
                 margin: const EdgeInsets.symmetric(horizontal: 16),
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withAlpha((0.1 * 255).toInt()),
               ),
               GlassMusicCard(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withAlpha((0.2 * 255).toInt()),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(Icons.speed, color: Colors.white),
@@ -199,13 +199,13 @@ class SettingsScreen extends StatelessWidget {
               Container(
                 height: 1,
                 margin: const EdgeInsets.symmetric(horizontal: 16),
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withAlpha((0.1 * 255).toInt()),
               ),
               GlassMusicCard(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withAlpha((0.2 * 255).toInt()),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(Icons.equalizer, color: Colors.white),
@@ -223,7 +223,7 @@ class SettingsScreen extends StatelessWidget {
               Container(
                 height: 1,
                 margin: const EdgeInsets.symmetric(horizontal: 16),
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withAlpha((0.1 * 255).toInt()),
               ),
               GlassContainer(
                 margin: EdgeInsets.zero,
@@ -233,7 +233,7 @@ class SettingsScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withAlpha((0.2 * 255).toInt()),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(Icons.headset, color: Colors.white),
@@ -254,7 +254,7 @@ class SettingsScreen extends StatelessWidget {
                           Text(
                             'Automatically pause when headphones are removed',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: Colors.white.withOpacity(0.7),
+                              color: Colors.white.withAlpha((0.7 * 255).toInt()),
                             ),
                           ),
                         ],
@@ -266,9 +266,9 @@ class SettingsScreen extends StatelessWidget {
                         // Handle headphone disconnect setting
                       },
                       activeThumbColor: Colors.white,
-                      activeTrackColor: Colors.white.withOpacity(0.3),
-                      inactiveThumbColor: Colors.white.withOpacity(0.5),
-                      inactiveTrackColor: Colors.white.withOpacity(0.2),
+                      activeTrackColor: Colors.white.withAlpha((0.3 * 255).toInt()),
+                      inactiveThumbColor: Colors.white.withAlpha((0.5 * 255).toInt()),
+                      inactiveTrackColor: Colors.white.withAlpha((0.2 * 255).toInt()),
                     ),
                   ],
                 ),
@@ -290,7 +290,7 @@ class SettingsScreen extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Refreshing library...'),
-              backgroundColor: Colors.black.withOpacity(0.8),
+              backgroundColor: Colors.black.withAlpha((0.8 * 255).toInt()),
             ),
           );
         },
@@ -329,7 +329,7 @@ class SettingsScreen extends StatelessWidget {
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withAlpha((0.2 * 255).toInt()),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(item['icon'] as IconData, color: Colors.white),
@@ -348,7 +348,7 @@ class SettingsScreen extends StatelessWidget {
                 Container(
                   height: 1,
                   margin: const EdgeInsets.symmetric(horizontal: 16),
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withAlpha((0.1 * 255).toInt()),
                 ),
             ],
           );
@@ -405,7 +405,7 @@ class SettingsScreen extends StatelessWidget {
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withAlpha((0.2 * 255).toInt()),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(item['icon'] as IconData, color: Colors.white),
@@ -424,7 +424,7 @@ class SettingsScreen extends StatelessWidget {
                 Container(
                   height: 1,
                   margin: const EdgeInsets.symmetric(horizontal: 16),
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withAlpha((0.1 * 255).toInt()),
                 ),
             ],
           );
@@ -582,9 +582,9 @@ class SettingsScreen extends StatelessWidget {
                   SliderTheme(
                     data: SliderTheme.of(context).copyWith(
                       activeTrackColor: Colors.white,
-                      inactiveTrackColor: Colors.white.withOpacity(0.3),
+                      inactiveTrackColor: Colors.white.withAlpha((0.3 * 255).toInt()),
                       thumbColor: Colors.white,
-                      overlayColor: Colors.white.withOpacity(0.2),
+                      overlayColor: Colors.white.withAlpha((0.2 * 255).toInt()),
                     ),
                     child: Slider(
                       value: audioProvider.speed,
@@ -829,7 +829,7 @@ class SettingsScreen extends StatelessWidget {
           gradient: LinearGradient(
             colors: [
               Theme.of(context).primaryColor,
-              Theme.of(context).primaryColor.withOpacity(0.7),
+              Theme.of(context).primaryColor.withAlpha((0.7 * 255).toInt()),
             ],
           ),
         ),
@@ -897,12 +897,12 @@ class BlockPicker extends StatelessWidget {
                 border: isSelected
                     ? Border.all(color: Colors.white, width: 3)
                     : Border.all(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withAlpha((0.3 * 255).toInt()),
                         width: 1,
                       ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withAlpha((0.2 * 255).toInt()),
                     blurRadius: 8,
                     spreadRadius: 0,
                     offset: const Offset(0, 4),
