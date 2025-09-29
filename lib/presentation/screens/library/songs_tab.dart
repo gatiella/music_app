@@ -56,7 +56,7 @@ class SongsTab extends StatelessWidget {
                 children: [
                   Text(
                     '${songs.length} songs',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color, fontSize: 14),
                   ),
                 ],
               ),
@@ -109,7 +109,7 @@ class SongsTab extends StatelessWidget {
                 height: 50,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  color: Colors.grey[300],
+                  color: Theme.of(context).cardColor,
                 ),
                 child: song.albumArt != null
                     ? ClipRRect(
@@ -120,12 +120,12 @@ class SongsTab extends StatelessWidget {
                           errorBuilder: (context, error, stackTrace) {
                             return Icon(
                               Icons.music_note,
-                              color: Colors.grey[600],
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                             );
                           },
                         ),
                       )
-                    : Icon(Icons.music_note, color: Colors.grey[600]),
+                    : Icon(Icons.music_note, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
               ),
               title: Text(
                 song.title,
@@ -156,7 +156,7 @@ class SongsTab extends StatelessWidget {
             ListTile(
               leading: Icon(
                 song.isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: song.isFavorite ? Colors.red : null,
+                color: song.isFavorite ? Theme.of(context).colorScheme.error : null,
               ),
               title: Text(
                 song.isFavorite ? 'Remove from Favorites' : 'Add to Favorites',

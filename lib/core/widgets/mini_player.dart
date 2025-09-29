@@ -131,6 +131,8 @@ class _MiniPlayerState extends State<MiniPlayer>
   }
 
   Widget _buildPlaceholderPlayer(BuildContext context) {
+    final theme = Theme.of(context);
+    final customColors = theme.customColors;
     return GlassContainer(
       height: 90,
       margin: widget.margin ?? const EdgeInsets.all(16),
@@ -143,7 +145,7 @@ class _MiniPlayerState extends State<MiniPlayer>
             height: 2,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(1),
-              color: Colors.white.withOpacity(0.2),
+              color: customColors.glassBorder,
             ),
           ),
           const SizedBox(height: 12),
@@ -155,11 +157,11 @@ class _MiniPlayerState extends State<MiniPlayer>
                 height: 50,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
-                  color: Colors.white.withOpacity(0.2),
+                  color: customColors.glassContainer,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.music_note,
-                  color: Colors.white,
+                  color: theme.colorScheme.onPrimary,
                   size: 24,
                 ),
               ),
@@ -175,7 +177,7 @@ class _MiniPlayerState extends State<MiniPlayer>
                       width: 150,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(7),
-                        color: Colors.white.withOpacity(0.3),
+                        color: customColors.glassBorder,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -184,7 +186,7 @@ class _MiniPlayerState extends State<MiniPlayer>
                       width: 100,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(6),
-                        color: Colors.white.withOpacity(0.2),
+                        color: customColors.glassContainer,
                       ),
                     ),
                   ],
@@ -198,7 +200,7 @@ class _MiniPlayerState extends State<MiniPlayer>
                     onPressed: null,
                     icon: Icon(
                       Icons.skip_previous_rounded,
-                      color: Colors.white.withOpacity(0.5),
+                      color: theme.colorScheme.onPrimary.withOpacity(0.5),
                       size: 28,
                     ),
                   ),
@@ -207,11 +209,11 @@ class _MiniPlayerState extends State<MiniPlayer>
                     height: 48,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.3),
+                      color: customColors.glassBorder,
                     ),
                     child: Icon(
                       Icons.play_arrow,
-                      color: Colors.white.withOpacity(0.8),
+                      color: theme.colorScheme.onPrimary.withOpacity(0.8),
                       size: 24,
                     ),
                   ),
@@ -219,7 +221,7 @@ class _MiniPlayerState extends State<MiniPlayer>
                     onPressed: null,
                     icon: Icon(
                       Icons.skip_next_rounded,
-                      color: Colors.white.withOpacity(0.5),
+                      color: theme.colorScheme.onPrimary.withOpacity(0.5),
                       size: 28,
                     ),
                   ),

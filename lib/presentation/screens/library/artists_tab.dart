@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_library_provider.dart';
+import '../../../data/models/song.dart';
 import '../../providers/audio_player_provider.dart';
 
 class ArtistsTab extends StatelessWidget {
@@ -21,95 +22,97 @@ class ArtistsTab extends StatelessWidget {
           itemCount: artists.length,
           itemBuilder: (context, index) {
             final artist = artists[index];
-            final artistSongs = libraryProvider.getSongsByArtist(artist);
-            final albumCount = artistSongs
-                .map((song) => song.album)
-                .toSet()
-                .length;
-
-            return Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Theme.of(
-                    context,
-                  ).primaryColor.withOpacity(0.1),
-                  child: Text(
-                    artist.isNotEmpty ? artist[0].toUpperCase() : '?',
-                    style: TextStyle(
-                      color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.bold,
+            return FutureBuilder<List<Song>>(
+              future: libraryProvider.getSongsByArtist(artist),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final artistSongs = snapshot.data ?? [];
+                final albumCount = artistSongs.map((song) => song.album).toSet().length;
+                return Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                      child: Text(
+                        artist.isNotEmpty ? artist[0].toUpperCase() : '?',
+                        style: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                title: Text(
-                  artist,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                subtitle: Text(
-                  '${artistSongs.length} song${artistSongs.length == 1 ? '' : 's'} • $albumCount album${albumCount == 1 ? '' : 's'}',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                ),
-                trailing: PopupMenuButton(
-                  onSelected: (value) {
-                    switch (value) {
-                      case 'play':
-                        audioProvider.playPlaylist(artistSongs);
-                        break;
-                      case 'shuffle':
-                        final shuffled = List.from(artistSongs);
-                        shuffled.shuffle();
-                        audioProvider.playPlaylist(shuffled.cast());
-                        break;
-                      case 'add_to_queue':
-                        for (final song in artistSongs) {
-                          audioProvider.addToQueue(song);
+                    title: Text(
+                      artist,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Text(
+                      '${artistSongs.length} song${artistSongs.length == 1 ? '' : 's'} • $albumCount album${albumCount == 1 ? '' : 's'}',
+                      style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color, fontSize: 13),
+                    ),
+                    trailing: PopupMenuButton(
+                      onSelected: (value) {
+                        switch (value) {
+                          case 'play':
+                            audioProvider.playPlaylist(artistSongs);
+                            break;
+                          case 'shuffle':
+                            final shuffled = List<Song>.from(artistSongs);
+                            shuffled.shuffle();
+                            audioProvider.playPlaylist(shuffled);
+                            break;
+                          case 'add_to_queue':
+                            for (final song in artistSongs) {
+                              audioProvider.addToQueue(song);
+                            }
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Added ${artistSongs.length} songs to queue',
+                                ),
+                              ),
+                            );
+                            break;
                         }
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Added ${artistSongs.length} songs to queue',
-                            ),
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'play',
+                          child: Row(
+                            children: [
+                              Icon(Icons.play_arrow),
+                              SizedBox(width: 12),
+                              Text('Play'),
+                            ],
                           ),
-                        );
-                        break;
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: 'play',
-                      child: Row(
-                        children: [
-                          Icon(Icons.play_arrow),
-                          SizedBox(width: 12),
-                          Text('Play'),
-                        ],
-                      ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'shuffle',
+                          child: Row(
+                            children: [
+                              Icon(Icons.shuffle),
+                              SizedBox(width: 12),
+                              Text('Shuffle'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'add_to_queue',
+                          child: Row(
+                            children: [
+                              Icon(Icons.queue),
+                              SizedBox(width: 12),
+                              Text('Add to Queue'),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    const PopupMenuItem(
-                      value: 'shuffle',
-                      child: Row(
-                        children: [
-                          Icon(Icons.shuffle),
-                          SizedBox(width: 12),
-                          Text('Shuffle'),
-                        ],
-                      ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'add_to_queue',
-                      child: Row(
-                        children: [
-                          Icon(Icons.queue),
-                          SizedBox(width: 12),
-                          Text('Add to Queue'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                onTap: () => _showArtistSongs(context, artist, artistSongs),
-              ),
+                    onTap: () => _showArtistSongs(context, artist, artistSongs),
+                  ),
+                );
+              },
             );
           },
         );
@@ -145,7 +148,7 @@ class ArtistsTab extends StatelessWidget {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey[400],
+                    color: Theme.of(context).dividerColor,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -186,7 +189,7 @@ class ArtistsTab extends StatelessWidget {
                             Text(
                               '${songs.length} songs',
                               style: TextStyle(
-                                color: Colors.grey[600],
+                                color: Theme.of(context).textTheme.bodyMedium?.color,
                                 fontSize: 14,
                               ),
                             ),
@@ -241,7 +244,7 @@ class ArtistsTab extends StatelessWidget {
                               height: 40,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(6),
-                                color: Colors.grey[300],
+                                color: Theme.of(context).cardColor,
                               ),
                               child: song.albumArt != null
                                   ? ClipRRect(
@@ -253,7 +256,7 @@ class ArtistsTab extends StatelessWidget {
                                             (context, error, stackTrace) {
                                               return Icon(
                                                 Icons.music_note,
-                                                color: Colors.grey[600],
+                                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                                 size: 20,
                                               );
                                             },
@@ -261,29 +264,27 @@ class ArtistsTab extends StatelessWidget {
                                     )
                                   : Icon(
                                       Icons.music_note,
-                                      color: Colors.grey[600],
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                       size: 20,
                                     ),
                             ),
                             title: Text(
                               song.title,
-                              style: TextStyle(
-                                fontWeight: isCurrentSong
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                                color: isCurrentSong
-                                    ? Theme.of(context).primaryColor
-                                    : null,
-                              ),
+                style: TextStyle(
+                fontWeight: isCurrentSong
+                  ? FontWeight.bold
+                  : FontWeight.normal,
+                color: isCurrentSong
+                  ? Theme.of(context).primaryColor
+                  : Theme.of(context).textTheme.bodyLarge?.color,
+                ),
                             ),
                             subtitle: Text(
                               '${song.album} • ${song.durationString}',
                               style: TextStyle(
                                 color: isCurrentSong
-                                    ? Theme.of(
-                                        context,
-                                      ).primaryColor.withOpacity(0.7)
-                                    : Colors.grey[600],
+                                    ? Theme.of(context).primaryColor.withOpacity(0.7)
+                                    : Theme.of(context).textTheme.bodyMedium?.color,
                                 fontSize: 13,
                               ),
                             ),

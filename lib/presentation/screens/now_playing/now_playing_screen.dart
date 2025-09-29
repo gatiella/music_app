@@ -209,7 +209,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(
-                colors: [Colors.white.withOpacity(0.1), Colors.transparent],
+                colors: [Theme.of(context).colorScheme.onPrimary.withOpacity(0.1), Colors.transparent],
               ),
             ),
           ),
@@ -227,9 +227,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(
+            icon: Icon(
               Icons.keyboard_arrow_down,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onPrimary,
               size: 32,
             ),
           ),
@@ -243,7 +243,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1.5,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.9),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -251,7 +251,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                   'From ${currentSong.album ?? 'Unknown Album'}',
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -261,7 +261,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
           ),
           IconButton(
             onPressed: () => _showMoreOptions(context),
-            icon: const Icon(Icons.more_vert, color: Colors.white),
+            icon: Icon(Icons.more_vert, color: Theme.of(context).colorScheme.onPrimary),
           ),
         ],
       ),
@@ -329,16 +329,14 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
   }
 
   Widget _buildDefaultAlbumArt() {
-    return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [MusicAppTheme.primaryPurple, MusicAppTheme.accentPink],
+    return Builder(
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: Theme.of(context).customColors.gradient1,
         ),
+        child: Icon(Icons.music_note, size: 80, color: Theme.of(context).colorScheme.onPrimary),
       ),
-      child: const Icon(Icons.music_note, size: 80, color: Colors.white),
     );
   }
 
@@ -350,10 +348,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
         children: [
           Text(
             currentSong.title,
-            style: const TextStyle(
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onPrimary,
             ),
             textAlign: TextAlign.center,
             maxLines: 2,
@@ -362,9 +360,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
           const SizedBox(height: 8),
           Text(
             currentSong.artist,
-            style: TextStyle(
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontSize: 18,
-              color: Colors.white.withOpacity(0.8),
+              color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.8),
               fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,
@@ -384,10 +382,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
         children: [
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              activeTrackColor: Colors.white,
-              inactiveTrackColor: Colors.white.withOpacity(0.3),
-              thumbColor: Colors.white,
-              overlayColor: Colors.white.withOpacity(0.2),
+              activeTrackColor: Theme.of(context).primaryColor,
+              inactiveTrackColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.3),
+              thumbColor: Theme.of(context).primaryColor,
+              overlayColor: Theme.of(context).primaryColor.withOpacity(0.2),
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
               trackHeight: 4,
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
@@ -413,17 +411,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             children: [
               Text(
                 audioProvider.positionText,
-                style: TextStyle(
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontSize: 12,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.8),
                   fontWeight: FontWeight.w500,
                 ),
               ),
               Text(
                 audioProvider.durationText,
-                style: TextStyle(
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontSize: 12,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.8),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -446,9 +444,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             width: 50,
             height: 50,
             borderRadius: BorderRadius.circular(25),
-            color: audioProvider.shuffleMode
-                ? MusicAppTheme.primaryPurple
-                : Colors.white.withOpacity(0.2),
+      color: audioProvider.shuffleMode
+        ? MusicAppTheme.primaryPurple
+        : Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
             child: Icon(Icons.shuffle, color: Colors.white, size: 24),
           ),
           GlassButton(
@@ -461,8 +459,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             child: Icon(
               Icons.skip_previous,
               color: audioProvider.hasPrevious
-                  ? Colors.white
-                  : Colors.white.withOpacity(0.5),
+                  ? Theme.of(context).colorScheme.onPrimary
+                  : Theme.of(context).colorScheme.onPrimary.withOpacity(0.5),
               size: 32,
             ),
           ),
@@ -484,7 +482,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                   ),
                   child: Icon(
                     audioProvider.isPlaying ? Icons.pause : Icons.play_arrow,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     size: 36,
                   ),
                 ),
@@ -501,8 +499,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             child: Icon(
               Icons.skip_next,
               color: audioProvider.hasNext
-                  ? Colors.white
-                  : Colors.white.withOpacity(0.5),
+                  ? Theme.of(context).colorScheme.onPrimary
+                  : Theme.of(context).colorScheme.onPrimary.withOpacity(0.5),
               size: 32,
             ),
           ),
@@ -511,12 +509,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             width: 50,
             height: 50,
             borderRadius: BorderRadius.circular(25),
-            color: audioProvider.loopMode != LoopMode.off
-                ? MusicAppTheme.primaryPurple
-                : Colors.white.withOpacity(0.2),
+      color: audioProvider.loopMode != LoopMode.off
+        ? MusicAppTheme.primaryPurple
+        : Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
             child: Icon(
               audioProvider.loopModeIcon,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onPrimary,
               size: 24,
             ),
           ),
@@ -540,7 +538,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             width: 50,
             height: 50,
             borderRadius: BorderRadius.circular(25),
-            child: const Icon(Icons.queue_music, color: Colors.white, size: 24),
+            child: Icon(Icons.queue_music, color: Theme.of(context).colorScheme.onPrimary, size: 24),
           ),
           GlassButton(
             onPressed: () {
@@ -551,11 +549,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             height: 50,
             borderRadius: BorderRadius.circular(25),
             color: currentSong.isFavorite
-                ? Colors.red.withOpacity(0.3)
-                : Colors.white.withOpacity(0.2),
+                ? Theme.of(context).colorScheme.error.withOpacity(0.3)
+                : Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
             child: Icon(
               currentSong.isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: currentSong.isFavorite ? Colors.red : Colors.white,
+              color: currentSong.isFavorite ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.onPrimary,
               size: 24,
             ),
           ),
@@ -567,7 +565,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             width: 50,
             height: 50,
             borderRadius: BorderRadius.circular(25),
-            child: const Icon(Icons.share, color: Colors.white, size: 24),
+            child: Icon(Icons.share, color: Theme.of(context).colorScheme.onPrimary, size: 24),
           ),
         ],
       ),
@@ -590,9 +588,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
               height: 4,
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(2),
-              ),
+                  color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(2),
+                ),
             ),
             _buildOptionTile(Icons.playlist_add, 'Add to Playlist', () {
               Navigator.pop(context);
@@ -627,17 +625,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           children: [
-            Icon(icon, color: Colors.white, size: 24),
+            Icon(icon, color: Theme.of(context).colorScheme.onPrimary, size: 24),
             const SizedBox(width: 16),
             Text(
               title,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),

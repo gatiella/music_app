@@ -6,6 +6,7 @@ import 'songs_tab.dart';
 import 'artists_tab.dart';
 import 'albums_tab.dart';
 import 'playlists_tab.dart';
+import '../../../app/theme.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -81,6 +82,7 @@ class _LibraryScreenState extends State<LibraryScreen>
   }
 
   Widget _buildLoadingView() {
+    final theme = Theme.of(context);
     return Center(
       child: GlassContainer(
         padding: const EdgeInsets.all(40),
@@ -92,30 +94,25 @@ class _LibraryScreenState extends State<LibraryScreen>
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.white.withOpacity(0.2),
-                    Colors.white.withOpacity(0.1),
-                  ],
-                ),
+                gradient: theme.customColors.gradient1,
               ),
-              child: const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.onPrimary),
                 strokeWidth: 3,
               ),
             ),
             const SizedBox(height: 24),
             Text(
               'Loading your music...',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: Colors.white,
+              style: theme.textTheme.titleLarge?.copyWith(
+                color: theme.colorScheme.onPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Please wait while we scan your device',
-              style: TextStyle(color: Colors.white70),
+              style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onPrimary.withOpacity(0.7)),
               textAlign: TextAlign.center,
             ),
           ],

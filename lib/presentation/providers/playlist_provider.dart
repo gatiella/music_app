@@ -1,10 +1,16 @@
 import 'package:flutter/foundation.dart';
 import '../../data/models/playlist.dart';
 import '../../data/models/song.dart';
+import '../../data/repositories/playlist_repository.dart';
+
 
 class PlaylistProvider extends ChangeNotifier {
+  final PlaylistRepository _playlistRepository;
   List<Playlist> _playlists = [];
   final List<Song> _allSongs = [];
+
+  PlaylistProvider({PlaylistRepository? playlistRepository})
+      : _playlistRepository = playlistRepository ?? PlaylistRepository();
 
   List<Playlist> get playlists => List.unmodifiable(_playlists);
 
@@ -15,83 +21,55 @@ class PlaylistProvider extends ChangeNotifier {
   }
 
   Future<void> createPlaylist(String name, {String? description}) async {
-    final playlist = Playlist(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: name,
-      description: description,
-      songIds: [],
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
-
-    _playlists.add(playlist);
-    notifyListeners();
-
-    // TODO: Save to database
+    final playlistId = await _playlistRepository.createPlaylist(name, description: description);
+    if (playlistId != null) {
+      await loadPlaylists();
+    }
   }
 
-  Future<void> updatePlaylist(String playlistId, String name,
-      {String? description}) async {
-    final index = _playlists.indexWhere((p) => p.id == playlistId);
-    if (index != -1) {
-      _playlists[index] = _playlists[index].copyWith(
-        name: name,
-        description: description,
-        updatedAt: DateTime.now(),
-      );
-      notifyListeners();
-      // TODO: Save to database
+  Future<void> updatePlaylist(String playlistId, String name, {String? description}) async {
+    final success = await _playlistRepository.updatePlaylist(playlistId, name, description: description);
+    if (success) {
+      await loadPlaylists();
     }
   }
 
   Future<void> deletePlaylist(String playlistId) async {
-    _playlists.removeWhere((p) => p.id == playlistId);
-    notifyListeners();
-    // TODO: Delete from database
+    final success = await _playlistRepository.deletePlaylist(playlistId);
+    if (success) {
+      await loadPlaylists();
+    }
   }
 
   Future<void> addSongToPlaylist(String playlistId, String songId) async {
-    final index = _playlists.indexWhere((p) => p.id == playlistId);
-    if (index != -1 && !_playlists[index].songIds.contains(songId)) {
-      final updatedSongIds = List<String>.from(_playlists[index].songIds)
-        ..add(songId);
-      _playlists[index] = _playlists[index].copyWith(
-        songIds: updatedSongIds,
-        updatedAt: DateTime.now(),
-      );
-      notifyListeners();
-      // TODO: Save to database
+    final intId = int.tryParse(songId);
+    if (intId == null) return;
+    final success = await _playlistRepository.addSongToPlaylist(playlistId, intId);
+    if (success == true) {
+      await loadPlaylists();
     }
   }
 
   Future<void> removeSongFromPlaylist(String playlistId, String songId) async {
-    final index = _playlists.indexWhere((p) => p.id == playlistId);
-    if (index != -1) {
-      final updatedSongIds = List<String>.from(_playlists[index].songIds)
-        ..remove(songId);
-      _playlists[index] = _playlists[index].copyWith(
-        songIds: updatedSongIds,
-        updatedAt: DateTime.now(),
-      );
-      notifyListeners();
-      // TODO: Save to database
+    final intId = int.tryParse(songId);
+    if (intId == null) return;
+    final success = await _playlistRepository.removeSongFromPlaylist(playlistId, intId);
+    if (success == true) {
+      await loadPlaylists();
     }
   }
 
-  Future<void> reorderSongsInPlaylist(
-      String playlistId, int oldIndex, int newIndex) async {
-    final index = _playlists.indexWhere((p) => p.id == playlistId);
-    if (index != -1) {
-      final songIds = List<String>.from(_playlists[index].songIds);
-      final songId = songIds.removeAt(oldIndex);
-      songIds.insert(newIndex, songId);
-
-      _playlists[index] = _playlists[index].copyWith(
-        songIds: songIds,
-        updatedAt: DateTime.now(),
-      );
-      notifyListeners();
-      // TODO: Save to database
+  Future<void> reorderSongsInPlaylist(String playlistId, int oldIndex, int newIndex) async {
+    final playlist = getPlaylistById(playlistId);
+    if (playlist == null) return;
+    final songIds = List<String>.from(playlist.songIds);
+    final songId = songIds.removeAt(oldIndex);
+    songIds.insert(newIndex, songId);
+    // Convert songIds to int for repository
+    final intSongIds = songIds.map((id) => int.tryParse(id)).whereType<int>().toList();
+    final success = await _playlistRepository.reorderPlaylistSongs(playlistId, intSongIds);
+    if (success == true) {
+      await loadPlaylists();
     }
   }
 
@@ -161,27 +139,14 @@ class PlaylistProvider extends ChangeNotifier {
   }
 
   Future<void> duplicatePlaylist(String playlistId, String newName) async {
-    final originalPlaylist = getPlaylistById(playlistId);
-    if (originalPlaylist != null) {
-      final duplicatedPlaylist = Playlist(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: newName,
-        description: originalPlaylist.description,
-        songIds: List<String>.from(originalPlaylist.songIds),
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-
-      _playlists.add(duplicatedPlaylist);
-      notifyListeners();
-      // TODO: Save to database
+    final newId = await _playlistRepository.duplicatePlaylist(playlistId, newName);
+    if (newId != null) {
+      await loadPlaylists();
     }
   }
 
   Future<void> loadPlaylists() async {
-    // TODO: Load playlists from database
-    // This is a placeholder implementation
-    _playlists = [];
+    _playlists = await _playlistRepository.getAllPlaylists();
     notifyListeners();
   }
 

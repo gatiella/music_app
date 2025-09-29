@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../providers/playlist_provider.dart';
 import '../../providers/music_library_provider.dart';
 import '../../providers/audio_player_provider.dart';
+import '../../../app/theme.dart';
 
 class PlaylistsTab extends StatelessWidget {
   const PlaylistsTab({super.key});
@@ -31,53 +32,63 @@ class PlaylistsTab extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildQuickPlaylistCard(
-                          context,
-                          'Favorites',
-                          '${libraryProvider.getFavorites().length} songs',
-                          Icons.favorite,
-                          Colors.red,
-                          () {
-                            final favorites = libraryProvider.getFavorites();
-                            if (favorites.isNotEmpty) {
-                              _showPlaylistSongs(
-                                context,
-                                'Favorites',
-                                favorites,
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('No favorite songs'),
-                                ),
-                              );
-                            }
+                        child: FutureBuilder<List<Song>>(
+                          future: libraryProvider.getFavorites(),
+                          builder: (context, snapshot) {
+                            final favorites = snapshot.data ?? <Song>[];
+                            return _buildQuickPlaylistCard(
+                              context,
+                              'Favorites',
+                              '${favorites.length} songs',
+                              Icons.favorite,
+                              Theme.of(context).colorScheme.error,
+                              () {
+                                if (favorites.isNotEmpty) {
+                                  _showPlaylistSongs(
+                                    context,
+                                    'Favorites',
+                                    favorites,
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('No favorite songs'),
+                                    ),
+                                  );
+                                }
+                              },
+                            );
                           },
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: _buildQuickPlaylistCard(
-                          context,
-                          'Recently Added',
-                          '${libraryProvider.getRecentlyAdded().length} songs',
-                          Icons.schedule,
-                          Colors.orange,
-                          () {
-                            final recent = libraryProvider.getRecentlyAdded();
-                            if (recent.isNotEmpty) {
-                              _showPlaylistSongs(
-                                context,
-                                'Recently Added',
-                                recent,
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('No recently added songs'),
-                                ),
-                              );
-                            }
+                        child: FutureBuilder<List<Song>>(
+                          future: libraryProvider.getRecentlyAdded(),
+                          builder: (context, snapshot) {
+                            final recent = snapshot.data ?? <Song>[];
+                            return _buildQuickPlaylistCard(
+                              context,
+                              'Recently Added',
+                              '${recent.length} songs',
+                              Icons.schedule,
+                              Theme.of(context).colorScheme.secondary,
+                              () {
+                                if (recent.isNotEmpty) {
+                                  _showPlaylistSongs(
+                                    context,
+                                    'Recently Added',
+                                    recent,
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('No recently added songs'),
+                                    ),
+                                  );
+                                }
+                              },
+                            );
                           },
                         ),
                       ),
@@ -87,27 +98,32 @@ class PlaylistsTab extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildQuickPlaylistCard(
-                          context,
-                          'Most Played',
-                          '${libraryProvider.getMostPlayed().length} songs',
-                          Icons.trending_up,
-                          Colors.green,
-                          () {
-                            final mostPlayed = libraryProvider.getMostPlayed();
-                            if (mostPlayed.isNotEmpty) {
-                              _showPlaylistSongs(
-                                context,
-                                'Most Played',
-                                mostPlayed,
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('No play history'),
-                                ),
-                              );
-                            }
+                        child: FutureBuilder<List<Song>>(
+                          future: libraryProvider.getMostPlayed(),
+                          builder: (context, snapshot) {
+                            final mostPlayed = snapshot.data ?? <Song>[];
+                            return _buildQuickPlaylistCard(
+                              context,
+                              'Most Played',
+                              '${mostPlayed.length} songs',
+                              Icons.trending_up,
+                              Theme.of(context).colorScheme.primary,
+                              () {
+                                if (mostPlayed.isNotEmpty) {
+                                  _showPlaylistSongs(
+                                    context,
+                                    'Most Played',
+                                    mostPlayed,
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('No play history'),
+                                    ),
+                                  );
+                                }
+                              },
+                            );
                           },
                         ),
                       ),
@@ -118,7 +134,7 @@ class PlaylistsTab extends StatelessWidget {
                           'All Songs',
                           '${libraryProvider.songs.length} songs',
                           Icons.library_music,
-                          Colors.blue,
+                              Theme.of(context).colorScheme.tertiary,
                           () {
                             if (libraryProvider.songs.isNotEmpty) {
                               _showPlaylistSongs(
@@ -164,20 +180,20 @@ class PlaylistsTab extends StatelessWidget {
                           Icon(
                             Icons.playlist_add,
                             size: 64,
-                            color: Colors.grey[400],
+                            color: Theme.of(context).dividerColor,
                           ),
                           const SizedBox(height: 16),
                           Text(
                             'No playlists yet',
                             style: TextStyle(
                               fontSize: 18,
-                              color: Colors.grey[600],
+                              color: Theme.of(context).textTheme.bodyMedium?.color,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'Create your first playlist to get started',
-                            style: TextStyle(color: Colors.grey[500]),
+                            style: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color),
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton.icon(
@@ -203,16 +219,7 @@ class PlaylistsTab extends StatelessWidget {
                               height: 50,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(8),
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    Theme.of(context).primaryColor,
-                                    Theme.of(
-                                      context,
-                                    ).primaryColor.withOpacity(0.7),
-                                  ],
-                                ),
+                                gradient: Theme.of(context).customColors.gradient1,
                               ),
                               child: const Icon(
                                 Icons.playlist_play,
@@ -229,7 +236,7 @@ class PlaylistsTab extends StatelessWidget {
                             subtitle: Text(
                               '${playlist.songIds.length} song${playlist.songIds.length == 1 ? '' : 's'}',
                               style: TextStyle(
-                                color: Colors.grey[600],
+                                color: Theme.of(context).textTheme.bodyMedium?.color,
                                 fontSize: 13,
                               ),
                             ),
@@ -284,8 +291,7 @@ class PlaylistsTab extends StatelessWidget {
                               ],
                             ),
                             onTap: () {
-                              final playlistSongs = playlistProvider
-                                  .getPlaylistSongs(playlist.id);
+                              final playlistSongs = playlistProvider.getPlaylistSongs(playlist.id);
                               _showPlaylistSongs(
                                 context,
                                 playlist.name,
@@ -339,7 +345,7 @@ class PlaylistsTab extends StatelessWidget {
               ),
               Text(
                 subtitle,
-                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color, fontSize: 12),
               ),
             ],
           ),
@@ -380,7 +386,7 @@ class PlaylistsTab extends StatelessWidget {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey[400],
+                    color: Theme.of(context).dividerColor,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -393,14 +399,7 @@ class PlaylistsTab extends StatelessWidget {
                         height: 60,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Theme.of(context).primaryColor,
-                              Theme.of(context).primaryColor.withOpacity(0.7),
-                            ],
-                          ),
+                          gradient: Theme.of(context).customColors.gradient1,
                         ),
                         child: const Icon(
                           Icons.playlist_play,
@@ -423,7 +422,7 @@ class PlaylistsTab extends StatelessWidget {
                             Text(
                               '${songs.length} songs',
                               style: TextStyle(
-                                color: Colors.grey[600],
+                                color: Theme.of(context).textTheme.bodyMedium?.color,
                                 fontSize: 14,
                               ),
                             ),
@@ -469,7 +468,7 @@ class PlaylistsTab extends StatelessWidget {
                                 height: 40,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(6),
-                                  color: Colors.grey[300],
+                                  color: Theme.of(context).cardColor,
                                 ),
                                 child: song.albumArt != null
                                     ? ClipRRect(
@@ -481,7 +480,7 @@ class PlaylistsTab extends StatelessWidget {
                                               (context, error, stackTrace) {
                                                 return Icon(
                                                   Icons.music_note,
-                                                  color: Colors.grey[600],
+                                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                                   size: 20,
                                                 );
                                               },
@@ -489,7 +488,7 @@ class PlaylistsTab extends StatelessWidget {
                                       )
                                     : Icon(
                                         Icons.music_note,
-                                        color: Colors.grey[600],
+                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                         size: 20,
                                       ),
                               ),

@@ -7,6 +7,8 @@ import 'core/services/permission_service.dart';
 import 'presentation/providers/audio_player_provider.dart';
 import 'presentation/providers/music_library_provider.dart';
 import 'presentation/providers/playlist_provider.dart';
+import 'data/repositories/music_repository.dart';
+import 'data/repositories/playlist_repository.dart';
 import 'presentation/providers/theme_provider.dart';
 
 void main() async {
@@ -36,16 +38,24 @@ class MusicPlayerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Instantiate repositories once
+    final musicRepository = MusicRepository();
+    final playlistRepository = PlaylistRepository();
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(
           create: (_) => AudioPlayerProvider(
             audioHandler as AudioPlayerService,
-          ), // Cast to AudioPlayerService
+          ),
         ),
-        ChangeNotifierProvider(create: (_) => MusicLibraryProvider()),
-        ChangeNotifierProvider(create: (_) => PlaylistProvider()),
+        ChangeNotifierProvider(
+          create: (_) => MusicLibraryProvider(musicRepository: musicRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => PlaylistProvider(playlistRepository: playlistRepository),
+        ),
       ],
       child: const MyApp(),
     );
