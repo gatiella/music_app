@@ -102,7 +102,7 @@ class GlassMusicCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return GlassContainer(
-      height: height ?? 80,
+      // height removed to allow flexible sizing and prevent overflow
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: padding ?? const EdgeInsets.all(16),
       child: InkWell(
