@@ -19,7 +19,7 @@ void main() async {
     builder: () => AudioPlayerService(),
     config: const AudioServiceConfig(
       androidNotificationChannelId:
-          'com.example.music_player_app.channel.audio',
+          'com.gatiella.music_app',
       androidNotificationChannelName: 'Music Player',
       androidNotificationOngoing: true,
     ),

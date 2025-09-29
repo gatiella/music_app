@@ -56,8 +56,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      // Removed extendBodyBehindAppBar to fix layout assertion error
       extendBody: true,
+      appBar: AppBar(
+        title: const Text('Music App'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.music_video),
+            tooltip: 'YouTube Music',
+            onPressed: () {
+              Navigator.pushNamed(context, '/ytmusic');
+            },
+          ),
+        ],
+      ),
       body: AnimatedBuilder(
         animation: _gradientAnimation,
         builder: (context, child) {

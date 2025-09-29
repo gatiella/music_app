@@ -42,9 +42,9 @@ class MusicLibraryProvider extends ChangeNotifier {
     notifyListeners();
     try {
       _songs = await _musicRepository.getAllSongs();
-      print('Loaded ${_songs.length} songs');
+      // Removed print statement
     } catch (e) {
-      print('Error loading music: $e');
+      // Removed print statement
       _songs = [];
     }
     _isLoading = false;

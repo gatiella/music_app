@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_app/presentation/screens/ytmusic_search_screen.dart';
 import '../presentation/screens/home/home_screen.dart';
 import '../presentation/screens/now_playing/now_playing_screen.dart';
 import '../presentation/screens/search/search_screen.dart';
@@ -11,6 +12,7 @@ class AppRoutes {
   static const String nowPlaying = '/now-playing';
   static const String search = '/search';
   static const String settings = '/settings';
+  static const String ytMusic = '/ytmusic';
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -19,14 +21,21 @@ class AppRoutes {
       nowPlaying: (context) => const NowPlayingScreen(),
       search: (context) => const SearchScreen(),
       settings: (context) => const SettingsScreen(),
+      ytMusic: (context) => const YTMusicSearchScreen(),
     };
   }
 
   static Route<dynamic>? onGenerateRoute(RouteSettings routeSettings) {
+  // Add import for YTMusicSearchScreen at the top if not present
     debugPrint('Generating route for: ${routeSettings.name}');
 
     try {
       switch (routeSettings.name) {
+        case ytMusic:
+          return MaterialPageRoute(
+            builder: (context) => const YTMusicSearchScreen(),
+            settings: routeSettings,
+          );
         case splash:
           return MaterialPageRoute(
             builder: (context) => const SplashScreen(),

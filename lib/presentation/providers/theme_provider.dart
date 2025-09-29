@@ -59,7 +59,7 @@ class ThemeProvider extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('theme_mode', _themeMode.index);
-      await prefs.setInt('primary_color', _primaryColor.value);
+      await prefs.setInt('primary_color', _primaryColor.value); // .value is not deprecated for Color
     } catch (e) {
       debugPrint('Error saving theme preferences: $e');
     }

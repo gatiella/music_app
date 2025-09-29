@@ -56,7 +56,7 @@ class SongsTab extends StatelessWidget {
                 children: [
                   Text(
                     '${songs.length} songs',
-                    style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color, fontSize: 14),
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
                   ),
                 ],
               ),

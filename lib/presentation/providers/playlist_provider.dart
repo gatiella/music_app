@@ -5,6 +5,16 @@ import '../../data/repositories/playlist_repository.dart';
 
 
 class PlaylistProvider extends ChangeNotifier {
+
+  /// Set the full order of songs in a playlist by song ID list
+  Future<void> setPlaylistOrder(String playlistId, List<String> newOrder) async {
+    // Convert songIds to int for repository
+    final intSongIds = newOrder.map((id) => int.tryParse(id)).whereType<int>().toList();
+    final success = await _playlistRepository.reorderPlaylistSongs(playlistId, intSongIds);
+    if (success == true) {
+      await loadPlaylists();
+    }
+  }
   final PlaylistRepository _playlistRepository;
   List<Playlist> _playlists = [];
   final List<Song> _allSongs = [];

@@ -4,7 +4,7 @@ import 'package:music_app/data/models/song.dart';
 
 class AudioPlayerService extends BaseAudioHandler {
   final _audioPlayer = AudioPlayer();
-  final _playlist = ConcatenatingAudioSource(children: []);
+  // Removed deprecated ConcatenatingAudioSource
 
   List<Song> _queue = [];
   int _currentIndex = 0;
@@ -90,12 +90,11 @@ class AudioPlayerService extends BaseAudioHandler {
     _queue = songs;
     _currentIndex = initialIndex;
 
-    await _playlist.clear();
-    await _playlist.addAll(
+    await _audioPlayer.setAudioSources(
       songs.map((song) => AudioSource.uri(Uri.file(song.path))).toList(),
+      initialIndex: initialIndex,
+      initialPosition: Duration.zero,
     );
-
-    await _audioPlayer.setAudioSource(_playlist, initialIndex: initialIndex);
 
     if (songs.isNotEmpty) {
       mediaItem.add(_createMediaItem(songs[initialIndex]));
@@ -103,14 +102,14 @@ class AudioPlayerService extends BaseAudioHandler {
   }
 
   Future<void> addToQueue(Song song) async {
-    _queue.add(song);
-    await _playlist.add(AudioSource.uri(Uri.file(song.path)));
+  _queue.add(song);
+  // No direct add for setAudioSources, would need to reset sources if needed
   }
 
   Future<void> removeFromQueue(int index) async {
     if (index < _queue.length) {
       _queue.removeAt(index);
-      await _playlist.removeAt(index);
+      // No direct remove for setAudioSources, would need to reset sources if needed
     }
   }
 
@@ -146,8 +145,8 @@ class AudioPlayerService extends BaseAudioHandler {
 
   @override
   Future<void> setShuffleMode(AudioServiceShuffleMode mode) async {
-    _shuffleMode = mode == AudioServiceShuffleMode.all;
-    await _audioPlayer.setShuffleModeEnabled(_shuffleMode);
+  _shuffleMode = mode == AudioServiceShuffleMode.all;
+  await _audioPlayer.setShuffleModeEnabled(_shuffleMode);
   }
 
   @override

@@ -1,11 +1,28 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:music_app/app/glassmorphism_widgets.dart';
 import 'package:provider/provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../providers/audio_player_provider.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  Duration? _sleepTimerDuration;
+  Timer? _sleepTimer;
+
+  String get _sleepTimerSubtitle {
+    if (_sleepTimerDuration == null) {
+      return 'Off';
+    } else {
+      return 'Will pause in ${_sleepTimerDuration!.inMinutes} minutes';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -273,11 +290,127 @@ class SettingsScreen extends StatelessWidget {
                   ],
                 ),
               ),
+              Container(
+                height: 1,
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                color: Colors.white.withAlpha((0.1 * 255).toInt()),
+              ),
+              GlassMusicCard(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withAlpha((0.2 * 255).toInt()),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.timer, color: Colors.white),
+                ),
+                title: 'Sleep Timer',
+                subtitle: _sleepTimerSubtitle, // Use the State getter
+                trailing: const Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.white70,
+                ),
+                onTap: () => _showSleepTimerDialog(context, audioProvider),
+                height: 70,
+                padding: const EdgeInsets.all(16),
+              ),
             ],
           ),
         );
       },
     );
+  }
+
+  void _showSleepTimerDialog(BuildContext context, AudioPlayerProvider audioProvider) {
+    Duration? selectedDuration = _sleepTimerDuration;
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.transparent,
+          content: GlassContainer(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Set Sleep Timer',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                StatefulBuilder(
+                  builder: (context, setState) {
+                    return DropdownButton<Duration?>(
+                      value: selectedDuration,
+                      dropdownColor: Colors.black87,
+                      items: [
+                        null,
+                        Duration(minutes: 10),
+                        Duration(minutes: 20),
+                        Duration(minutes: 30),
+                        Duration(minutes: 60),
+                      ].map((duration) {
+                        if (duration == null) {
+                          return DropdownMenuItem<Duration?>(
+                            value: null,
+                            child: Text('Off', style: TextStyle(color: Colors.white)),
+                          );
+                        }
+                        return DropdownMenuItem<Duration?>(
+                          value: duration,
+                          child: Text('${duration.inMinutes} minutes', style: TextStyle(color: Colors.white)),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() => selectedDuration = value);
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    GlassButton(
+                      onPressed: () => Navigator.pop(context),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+                    ),
+                    const SizedBox(width: 12),
+                    GlassButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _setSleepTimer(selectedDuration, audioProvider);
+                      },
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      child: const Text('Set', style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _setSleepTimer(Duration? duration, AudioPlayerProvider audioProvider) {
+    _sleepTimer?.cancel();
+    setState(() {
+      _sleepTimerDuration = duration;
+    });
+    if (duration != null) {
+      _sleepTimer = Timer(duration, () {
+        audioProvider.pause();
+        setState(() {
+          _sleepTimerDuration = null;
+        });
+      });
+    }
   }
 
   Widget _buildLibrarySettings(BuildContext context) {
