@@ -34,7 +34,7 @@ class ArtistsTab extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                      backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
                       child: Text(
                         artist.isNotEmpty ? artist[0].toUpperCase() : '?',
                         style: TextStyle(
@@ -164,7 +164,7 @@ class ArtistsTab extends StatelessWidget {
                         radius: 30,
                         backgroundColor: Theme.of(
                           context,
-                        ).primaryColor.withValues(alpha: 0.1),
+                        ).primaryColor.withOpacity(0.1),
                         child: Text(
                           artist.isNotEmpty ? artist[0].toUpperCase() : '?',
                           style: TextStyle(
@@ -256,7 +256,7 @@ class ArtistsTab extends StatelessWidget {
                                             (context, error, stackTrace) {
                                               return Icon(
                                                 Icons.music_note,
-                                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                                 size: 20,
                                               );
                                             },
@@ -264,7 +264,7 @@ class ArtistsTab extends StatelessWidget {
                                     )
                                   : Icon(
                                       Icons.music_note,
-                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                       size: 20,
                                     ),
                             ),
@@ -283,7 +283,7 @@ class ArtistsTab extends StatelessWidget {
                               '${song.album} • ${song.durationString}',
                               style: TextStyle(
                                 color: isCurrentSong
-                                    ? Theme.of(context).primaryColor.withValues(alpha: 0.7)
+                                    ? Theme.of(context).primaryColor.withOpacity(0.7)
                                     : Theme.of(context).textTheme.bodyMedium?.color,
                                 fontSize: 13,
                               ),

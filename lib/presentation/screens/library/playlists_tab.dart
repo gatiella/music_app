@@ -330,7 +330,7 @@ class PlaylistsTab extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
+                  color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: color, size: 24),
@@ -495,7 +495,7 @@ class PlaylistsTab extends StatelessWidget {
                                                   (context, error, stackTrace) {
                                                 return Icon(
                                                   Icons.music_note,
-                                                  color: Theme.of(context).colorScheme.onSurface.withAlpha((0.5 * 255).toInt()),
+                                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                                   size: 20,
                                                 );
                                               },
@@ -503,7 +503,7 @@ class PlaylistsTab extends StatelessWidget {
                                           )
                                         : Icon(
                                             Icons.music_note,
-                                            color: Theme.of(context).colorScheme.onSurface.withAlpha((0.5 * 255).toInt()),
+                                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                             size: 20,
                                           ),
                                   ),

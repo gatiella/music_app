@@ -1,10 +1,245 @@
 import 'package:music_app/data/models/playlist.dart';
 import 'package:music_app/data/models/song.dart';
+import 'package:music_app/data/models/downloaded_song.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../../core/constants/app_constants.dart';
 
 class DatabaseHelper {
+  // DownloadedSong operations
+  Future<int> insertDownloadedSong(DownloadedSong song) async {
+    final db = await database;
+    return await db.insert(
+      AppConstants.downloadedSongsTable,
+      song.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<List<DownloadedSong>> getAllDownloadedSongs() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      AppConstants.downloadedSongsTable,
+      orderBy: 'downloadedAt DESC',
+    );
+    return List.generate(maps.length, (i) => DownloadedSong.fromMap(maps[i]));
+  }
+
+  Future<DownloadedSong?> getDownloadedSongById(String id) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      AppConstants.downloadedSongsTable,
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    return maps.isNotEmpty ? DownloadedSong.fromMap(maps.first) : null;
+  }
+
+  Future<int> deleteDownloadedSong(String id) async {
+    final db = await database;
+    return await db.delete(
+      AppConstants.downloadedSongsTable,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  // Update playlist (rename, description, tags, cover)
+  Future<int> updateYTMusicPlaylist(String playlistId, {
+    String? name,
+    String? coverImageUrl,
+    String? description,
+    List<String>? tags,
+  }) async {
+    final db = await database;
+    final updateMap = <String, Object?>{};
+    if (name != null) updateMap['name'] = name;
+    if (coverImageUrl != null) updateMap['coverImageUrl'] = coverImageUrl;
+    if (description != null) updateMap['description'] = description;
+    if (tags != null) updateMap['tags'] = tags.join(',');
+    if (updateMap.isEmpty) return 0;
+    return await db.update(
+      AppConstants.ytMusicPlaylistsTable,
+      updateMap,
+      where: 'id = ?',
+      whereArgs: [playlistId],
+    );
+  }
+
+  // Batch add items to playlist
+  Future<void> addYTMusicItemsToPlaylist(String playlistId, List<String> videoIds) async {
+    final db = await database;
+    final batch = db.batch();
+    for (int i = 0; i < videoIds.length; i++) {
+      batch.insert(
+        AppConstants.ytMusicPlaylistItemsTable,
+        {
+          'playlistId': playlistId,
+          'videoId': videoIds[i],
+          'position': i,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
+  // Batch remove items from playlist
+  Future<void> removeYTMusicItemsFromPlaylist(String playlistId, List<String> videoIds) async {
+    final db = await database;
+    final batch = db.batch();
+    for (final videoId in videoIds) {
+      batch.delete(
+        AppConstants.ytMusicPlaylistItemsTable,
+        where: 'playlistId = ? AND videoId = ?',
+        whereArgs: [playlistId, videoId],
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
+  // Reorder items in playlist
+  Future<void> reorderYTMusicPlaylistItems(String playlistId, List<String> orderedVideoIds) async {
+    final db = await database;
+    final batch = db.batch();
+    for (int i = 0; i < orderedVideoIds.length; i++) {
+      batch.update(
+        AppConstants.ytMusicPlaylistItemsTable,
+        {'position': i},
+        where: 'playlistId = ? AND videoId = ?',
+        whereArgs: [playlistId, orderedVideoIds[i]],
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
+  // Export playlist (get all videoIds for a playlist)
+  Future<List<String>> exportYTMusicPlaylist(String playlistId) async {
+    final db = await database;
+    final items = await db.query(
+      AppConstants.ytMusicPlaylistItemsTable,
+      columns: ['videoId'],
+      where: 'playlistId = ?',
+      whereArgs: [playlistId],
+      orderBy: 'position ASC',
+    );
+    return items.map((e) => e['videoId'] as String).toList();
+  }
+
+  // YT Music Playlists operations
+  Future<int> insertYTMusicPlaylist(Map<String, dynamic> playlist) async {
+    final db = await database;
+    return await db.insert(
+      AppConstants.ytMusicPlaylistsTable,
+      playlist,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<int> deleteYTMusicPlaylist(String playlistId) async {
+    final db = await database;
+    return await db.delete(
+      AppConstants.ytMusicPlaylistsTable,
+      where: 'id = ?',
+      whereArgs: [playlistId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getAllYTMusicPlaylists() async {
+    final db = await database;
+    return await db.query(
+      AppConstants.ytMusicPlaylistsTable,
+      orderBy: 'createdAt DESC',
+    );
+  }
+
+  Future<Map<String, dynamic>?> getYTMusicPlaylistById(String playlistId) async {
+    final db = await database;
+    final result = await db.query(
+      AppConstants.ytMusicPlaylistsTable,
+      where: 'id = ?',
+      whereArgs: [playlistId],
+      limit: 1,
+    );
+    if (result.isNotEmpty) {
+      return result.first;
+    }
+    return null;
+  }
+
+  // YT Music Playlist Items operations
+  Future<int> addYTMusicItemToPlaylist(String playlistId, String videoId, int position) async {
+    final db = await database;
+    return await db.insert(
+      AppConstants.ytMusicPlaylistItemsTable,
+      {
+        'playlistId': playlistId,
+        'videoId': videoId,
+        'position': position,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<int> removeYTMusicItemFromPlaylist(String playlistId, String videoId) async {
+    final db = await database;
+    return await db.delete(
+      AppConstants.ytMusicPlaylistItemsTable,
+      where: 'playlistId = ? AND videoId = ?',
+      whereArgs: [playlistId, videoId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getYTMusicPlaylistItems(String playlistId) async {
+    final db = await database;
+    return await db.query(
+      AppConstants.ytMusicPlaylistItemsTable,
+      where: 'playlistId = ?',
+      whereArgs: [playlistId],
+      orderBy: 'position ASC',
+    );
+  }
+  // YT Music Favorites operations
+  Future<int> insertYTMusicFavorite(Map<String, dynamic> favorite) async {
+    final db = await database;
+    return await db.insert(
+      AppConstants.ytMusicFavoritesTable,
+      favorite,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<int> deleteYTMusicFavorite(String videoId) async {
+    final db = await database;
+    return await db.delete(
+      AppConstants.ytMusicFavoritesTable,
+      where: 'videoId = ?',
+      whereArgs: [videoId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getAllYTMusicFavorites() async {
+    final db = await database;
+    return await db.query(
+      AppConstants.ytMusicFavoritesTable,
+      orderBy: 'dateAdded DESC',
+    );
+  }
+
+  Future<Map<String, dynamic>?> getYTMusicFavoriteById(String videoId) async {
+    final db = await database;
+    final result = await db.query(
+      AppConstants.ytMusicFavoritesTable,
+      where: 'videoId = ?',
+      whereArgs: [videoId],
+      limit: 1,
+    );
+    if (result.isNotEmpty) {
+      return result.first;
+    }
+    return null;
+  }
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   factory DatabaseHelper() => _instance;
   DatabaseHelper._internal();
@@ -31,6 +266,29 @@ class DatabaseHelper {
   }
 
   Future<void> _onCreate(Database db, int version) async {
+    // YT Music Playlists table
+    await db.execute('''
+      CREATE TABLE ${AppConstants.ytMusicPlaylistsTable} (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        createdAt INTEGER NOT NULL,
+        coverImageUrl TEXT,
+        description TEXT,
+        tags TEXT
+      )
+    ''');
+
+    // YT Music Playlist Items table
+    await db.execute('''
+      CREATE TABLE ${AppConstants.ytMusicPlaylistItemsTable} (
+        playlistId TEXT NOT NULL,
+        videoId TEXT NOT NULL,
+        position INTEGER,
+        PRIMARY KEY (playlistId, videoId),
+        FOREIGN KEY (playlistId) REFERENCES ${AppConstants.ytMusicPlaylistsTable}(id) ON DELETE CASCADE,
+        FOREIGN KEY (videoId) REFERENCES ${AppConstants.ytMusicFavoritesTable}(videoId) ON DELETE CASCADE
+      )
+    ''');
     // Songs table
     await db.execute('''
       CREATE TABLE ${AppConstants.songsTable} (
@@ -94,6 +352,35 @@ class DatabaseHelper {
     await db.execute(
       'CREATE INDEX idx_playlist_songs_playlist ON ${AppConstants.playlistSongsTable} (playlistId)',
     );
+
+    // YT Music Favorites table
+    await db.execute('''
+      CREATE TABLE ${AppConstants.ytMusicFavoritesTable} (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        artist TEXT,
+        album TEXT,
+        thumbnailUrl TEXT,
+        videoId TEXT NOT NULL UNIQUE,
+        duration INTEGER,
+        dateAdded INTEGER NOT NULL
+      )
+    ''');
+    // Downloaded Songs table
+    await db.execute('''
+      CREATE TABLE ${AppConstants.downloadedSongsTable} (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        artist TEXT,
+        album TEXT,
+        albumArt TEXT,
+        videoId TEXT NOT NULL,
+        filePath TEXT NOT NULL,
+        duration INTEGER,
+        size INTEGER,
+        dateDownloaded INTEGER NOT NULL
+      )
+    ''');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {

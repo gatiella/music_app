@@ -98,7 +98,7 @@ class AlbumsTab extends StatelessWidget {
                                       shape: BoxShape.circle,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.2),
+                                          color: Colors.black.withOpacity(0.2),
                                           blurRadius: 6,
                                           spreadRadius: 1,
                                         ),
@@ -249,7 +249,7 @@ class AlbumsTab extends StatelessWidget {
                                     return Icon(
                                       Icons.album,
                                       size: 30,
-                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                     );
                                   },
                                 ),
@@ -257,7 +257,7 @@ class AlbumsTab extends StatelessWidget {
                             : Icon(
                                 Icons.album,
                                 size: 30,
-                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                               ),
                       ),
                       const SizedBox(width: 16),
@@ -366,7 +366,7 @@ class AlbumsTab extends StatelessWidget {
                               song.durationString,
                               style: TextStyle(
                                 color: isCurrentSong
-                                    ? Theme.of(context).primaryColor.withValues(alpha: 0.7)
+                                    ? Theme.of(context).primaryColor.withOpacity(0.7)
                                     : Theme.of(context).textTheme.bodyMedium?.color,
                                 fontSize: 13,
                               ),

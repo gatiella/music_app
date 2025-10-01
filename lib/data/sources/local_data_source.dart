@@ -4,6 +4,125 @@ import '../models/playlist.dart';
 import '../../core/services/database_service.dart';
 
 class LocalDataSource {
+
+  // YT Music Playlists Operations
+  Future<int> insertYTMusicPlaylist(Map<String, dynamic> playlist) async {
+    try {
+      return await _databaseService.insertYTMusicPlaylist(playlist);
+    } catch (e) {
+      debugPrint('Error inserting YT Music playlist: $e');
+      rethrow;
+    }
+  }
+
+  Future<int> deleteYTMusicPlaylist(String playlistId) async {
+    try {
+      return await _databaseService.deleteYTMusicPlaylist(playlistId);
+    } catch (e) {
+      debugPrint('Error deleting YT Music playlist: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAllYTMusicPlaylists() async {
+    try {
+      return await _databaseService.getAllYTMusicPlaylists();
+    } catch (e) {
+      debugPrint('Error getting YT Music playlists: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getYTMusicPlaylistById(String playlistId) async {
+    try {
+      return await _databaseService.getYTMusicPlaylistById(playlistId);
+    } catch (e) {
+      debugPrint('Error getting YT Music playlist by ID: $e');
+      rethrow;
+    }
+  }
+
+  Future<int> updateYTMusicPlaylist(String playlistId, {String? name, String? coverImageUrl, String? description, List<String>? tags}) async {
+    try {
+      return await _databaseService.updateYTMusicPlaylist(playlistId, name: name, coverImageUrl: coverImageUrl, description: description, tags: tags);
+    } catch (e) {
+      debugPrint('Error updating YT Music playlist: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> addYTMusicItemsToPlaylist(String playlistId, List<String> videoIds) async {
+    try {
+      await _databaseService.addYTMusicItemsToPlaylist(playlistId, videoIds);
+    } catch (e) {
+      debugPrint('Error batch adding items to YT Music playlist: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> removeYTMusicItemsFromPlaylist(String playlistId, List<String> videoIds) async {
+    try {
+      await _databaseService.removeYTMusicItemsFromPlaylist(playlistId, videoIds);
+    } catch (e) {
+      debugPrint('Error batch removing items from YT Music playlist: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> reorderYTMusicPlaylistItems(String playlistId, List<String> orderedVideoIds) async {
+    try {
+      await _databaseService.reorderYTMusicPlaylistItems(playlistId, orderedVideoIds);
+    } catch (e) {
+      debugPrint('Error reordering YT Music playlist items: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<String>> exportYTMusicPlaylist(String playlistId) async {
+    try {
+      return await _databaseService.exportYTMusicPlaylist(playlistId);
+    } catch (e) {
+      debugPrint('Error exporting YT Music playlist: $e');
+      rethrow;
+    }
+  }
+
+  // YT Music Favorites Operations
+  Future<int> insertYTMusicFavorite(Map<String, dynamic> favorite) async {
+    try {
+      return await _databaseService.insertYTMusicFavorite(favorite);
+    } catch (e) {
+      debugPrint('Error inserting YT Music favorite: $e');
+      rethrow;
+    }
+  }
+
+  Future<int> deleteYTMusicFavorite(String videoId) async {
+    try {
+      return await _databaseService.deleteYTMusicFavorite(videoId);
+    } catch (e) {
+      debugPrint('Error deleting YT Music favorite: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAllYTMusicFavorites() async {
+    try {
+      return await _databaseService.getAllYTMusicFavorites();
+    } catch (e) {
+      debugPrint('Error getting YT Music favorites: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getYTMusicFavoriteById(String videoId) async {
+    try {
+      return await _databaseService.getYTMusicFavoriteById(videoId);
+    } catch (e) {
+      debugPrint('Error getting YT Music favorite by ID: $e');
+      rethrow;
+    }
+  }
   final DatabaseService _databaseService;
 
   LocalDataSource({DatabaseService? databaseService})

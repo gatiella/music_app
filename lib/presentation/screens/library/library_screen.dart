@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:music_app/app/glassmorphism_widgets.dart';
+import 'package:music_app/core/services/permission_service.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_library_provider.dart';
 import 'songs_tab.dart';
 import 'artists_tab.dart';
 import 'albums_tab.dart';
 import 'playlists_tab.dart';
+import 'ytmusic_favorites_tab.dart';
+import 'ytmusic_playlists_tab.dart';
 import '../../../app/theme.dart';
 
 class LibraryScreen extends StatefulWidget {
@@ -18,11 +21,116 @@ class LibraryScreen extends StatefulWidget {
 class _LibraryScreenState extends State<LibraryScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _permissionsRequested = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
+    
+    // Check permissions and load music automatically on init
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeLibrary();
+    });
+  }
+
+  Future<void> _initializeLibrary() async {
+    if (_permissionsRequested) return;
+    _permissionsRequested = true;
+
+    final hasPermission = await PermissionService.checkStoragePermission();
+    
+    if (!hasPermission && mounted) {
+      // Request permissions silently
+      final granted = await PermissionService.requestPermissions();
+      
+      if (granted && mounted) {
+        // Load music after permission is granted
+        context.read<MusicLibraryProvider>().loadMusic();
+      } else if (mounted) {
+        // Show dialog only if permission was denied
+        _showPermissionDeniedDialog();
+      }
+    } else if (mounted) {
+      // Permission already granted, load music
+      context.read<MusicLibraryProvider>().loadMusic();
+    }
+  }
+
+  Future<void> _showPermissionDeniedDialog() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.warning_rounded,
+                color: Colors.red,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Permission Required',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'Storage permission is required to access your music files. '
+          'Please enable it in app settings.\n\n'
+          'Go to: Settings > Apps > Music App > Permissions > Files and media',
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 14,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text(
+              'Maybe Later',
+              style: TextStyle(color: Colors.white54),
+            ),
+          ),
+          // ElevatedButton(
+          //   onPressed: () async {
+          //     Navigator.pop(context);
+          //     await PermissionService.openAppSettings();
+          //     // Reset flag so it can check again when user returns
+          //     _permissionsRequested = false;
+          //   },
+          //   style: ElevatedButton.styleFrom(
+          //     backgroundColor: Colors.blue,
+          //     foregroundColor: Colors.white,
+          //     shape: RoundedRectangleBorder(
+          //       borderRadius: BorderRadius.circular(12),
+          //     ),
+          //   ),
+          //   child: const Text('Open Settings'),
+          // ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -33,13 +141,20 @@ class _LibraryScreenState extends State<LibraryScreen>
         appBar: GlassAppBar(
           title: 'Library',
           actions: [
-            IconButton(
-              onPressed: () {
-                context.read<MusicLibraryProvider>().loadMusic();
-              },
-              icon: const Icon(Icons.refresh, color: Colors.white),
-            ),
-            IconButton(
+         IconButton(
+                onPressed: () async {
+                  final hasPermission = await PermissionService.checkStoragePermission();
+                  if (hasPermission && mounted) {
+                    // Use forceRefresh instead of loadMusic
+                    await context.read<MusicLibraryProvider>().forceRefresh();
+                    _showRefreshSnackbar();
+                  } else if (mounted) {
+                    _showPermissionDeniedDialog();
+                  }
+                },
+                icon: const Icon(Icons.refresh, color: Colors.white),
+              ),
+          IconButton(
               onPressed: () {
                 _showSortOptions(context);
               },
@@ -47,36 +162,56 @@ class _LibraryScreenState extends State<LibraryScreen>
             ),
           ],
         ),
-        body: Consumer<MusicLibraryProvider>(
-          builder: (context, libraryProvider, child) {
-            if (libraryProvider.isLoading) {
-              return _buildLoadingView();
-            }
+        body: Column(
+          children: [
+            _buildGlassTabBar(),
+            Expanded(
+              child: Consumer<MusicLibraryProvider>(
+                builder: (context, libraryProvider, child) {
+                  if (libraryProvider.isLoading) {
+                    return _buildLoadingView();
+                  }
 
-            if (libraryProvider.songs.isEmpty) {
-              return _buildEmptyView(libraryProvider);
-            }
+                  if (libraryProvider.songs.isEmpty) {
+                    return _buildEmptyView();
+                  }
 
-            return Column(
-              children: [
-                // Custom Tab Bar with Glass Effect
-                _buildGlassTabBar(),
-                // Tab Bar View
-                Expanded(
-                  child: TabBarView(
+                  return TabBarView(
                     controller: _tabController,
                     children: const [
                       SongsTab(),
                       ArtistsTab(),
                       AlbumsTab(),
                       PlaylistsTab(),
+                      YTMusicFavoritesTab(),
+                      YTMusicPlaylistsTab(),
                     ],
-                  ),
-                ),
-              ],
-            );
-          },
+                  );
+                },
+              ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  void _showRefreshSnackbar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: const [
+            Icon(Icons.refresh, color: Colors.white),
+            SizedBox(width: 12),
+            Text('Refreshing music library...'),
+          ],
+        ),
+        backgroundColor: Colors.grey[850],
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -111,8 +246,10 @@ class _LibraryScreenState extends State<LibraryScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              'Please wait while we scan your device',
-              style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onPrimary.withValues(alpha: 0.7)),
+              'Scanning device for audio files',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onPrimary.withOpacity(0.7),
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -121,7 +258,7 @@ class _LibraryScreenState extends State<LibraryScreen>
     );
   }
 
-  Widget _buildEmptyView(MusicLibraryProvider libraryProvider) {
+  Widget _buildEmptyView() {
     return Center(
       child: GlassContainer(
         padding: const EdgeInsets.all(40),
@@ -133,7 +270,7 @@ class _LibraryScreenState extends State<LibraryScreen>
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.1),
+                color: Colors.white.withOpacity(0.1),
               ),
               child: const Icon(
                 Icons.music_off,
@@ -151,20 +288,30 @@ class _LibraryScreenState extends State<LibraryScreen>
             ),
             const SizedBox(height: 12),
             const Text(
-              'Make sure you have music files on your device',
+              'No audio files were found on your device.\n'
+              'Make sure you have music files in your Music folder.',
               style: TextStyle(color: Colors.white70),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            GlassButton(
-              onPressed: () {
-                libraryProvider.loadMusic();
-              },
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          GlassButton(
+                onPressed: () async {
+                  final hasPermission = await PermissionService.checkStoragePermission();
+                  if (hasPermission && mounted) {
+                    await context.read<MusicLibraryProvider>().forceRefresh();
+                    _showRefreshSnackbar();
+                  } else if (mounted) {
+                    _showPermissionDeniedDialog();
+                  }
+                },
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 14,
+              ),
               gradient: LinearGradient(
                 colors: [
-                  Colors.white.withValues(alpha: 0.2),
-                  Colors.white.withValues(alpha: 0.1),
+                  Colors.white.withOpacity(0.2),
+                  Colors.white.withOpacity(0.1),
                 ],
               ),
               child: Row(
@@ -173,7 +320,7 @@ class _LibraryScreenState extends State<LibraryScreen>
                   Icon(Icons.refresh, color: Colors.white, size: 20),
                   SizedBox(width: 8),
                   Text(
-                    'Refresh',
+                    'Scan Again',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
@@ -199,15 +346,15 @@ class _LibraryScreenState extends State<LibraryScreen>
           borderRadius: BorderRadius.circular(20),
           gradient: LinearGradient(
             colors: [
-              Colors.white.withValues(alpha: 0.3),
-              Colors.white.withValues(alpha: 0.2),
+              Colors.white.withOpacity(0.3),
+              Colors.white.withOpacity(0.2),
             ],
           ),
         ),
         indicatorPadding: const EdgeInsets.all(2),
         dividerColor: Colors.transparent,
         labelColor: Colors.white,
-  unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
+        unselectedLabelColor: Colors.white.withOpacity(0.6),
         labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         unselectedLabelStyle: const TextStyle(
           fontSize: 14,
@@ -218,6 +365,8 @@ class _LibraryScreenState extends State<LibraryScreen>
           Tab(text: 'Artists'),
           Tab(text: 'Albums'),
           Tab(text: 'Playlists'),
+          Tab(text: 'YT Music'),
+          Tab(text: 'YT Playlists'),
         ],
       ),
     );
@@ -235,7 +384,6 @@ class _LibraryScreenState extends State<LibraryScreen>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
@@ -246,15 +394,12 @@ class _LibraryScreenState extends State<LibraryScreen>
                 ),
               ),
             ),
-
-            // Sort Options
             ...[
               {
                 'icon': Icons.title,
                 'title': 'Title',
                 'action': () {
                   Navigator.pop(context);
-                  // Sort by title
                 },
               },
               {
@@ -262,7 +407,6 @@ class _LibraryScreenState extends State<LibraryScreen>
                 'title': 'Artist',
                 'action': () {
                   Navigator.pop(context);
-                  // Sort by artist
                 },
               },
               {
@@ -270,7 +414,6 @@ class _LibraryScreenState extends State<LibraryScreen>
                 'title': 'Album',
                 'action': () {
                   Navigator.pop(context);
-                  // Sort by album
                 },
               },
               {
@@ -278,7 +421,6 @@ class _LibraryScreenState extends State<LibraryScreen>
                 'title': 'Duration',
                 'action': () {
                   Navigator.pop(context);
-                  // Sort by duration
                 },
               },
               {
@@ -286,7 +428,6 @@ class _LibraryScreenState extends State<LibraryScreen>
                 'title': 'Date Added',
                 'action': () {
                   Navigator.pop(context);
-                  // Sort by date added
                 },
               },
             ].asMap().entries.map((entry) {
@@ -299,7 +440,7 @@ class _LibraryScreenState extends State<LibraryScreen>
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
+                        color: Colors.white.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
@@ -312,11 +453,11 @@ class _LibraryScreenState extends State<LibraryScreen>
                     height: 60,
                     padding: const EdgeInsets.all(12),
                   ),
-                  if (index < 4) // Don't add divider after last item
+                  if (index < 4)
                     Container(
                       height: 1,
                       margin: const EdgeInsets.symmetric(horizontal: 16),
-                      color: Colors.white.withValues(alpha: 0.1),
+                      color: Colors.white.withOpacity(0.1),
                     ),
                 ],
               );

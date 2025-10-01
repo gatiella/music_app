@@ -1,8 +1,57 @@
+// import 'package:audio_service/audio_service.dart'; // Remove duplicate import if present
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:music_app/data/models/song.dart';
 
 class AudioPlayerService extends BaseAudioHandler {
+
+  // Play a queue of DownloadedSong MediaItems
+  Future<void> setDownloadedQueue(List<MediaItem> items, {int initialIndex = 0}) async {
+    _queue = items.map((item) => Song(
+      id: int.tryParse(item.id) ?? 0,
+      title: item.title,
+      artist: item.artist ?? '',
+      album: '',
+      albumArt: item.artUri?.toString(),
+      path: item.extras?['filePath'] ?? '',
+      duration: item.duration?.inMilliseconds ?? 0,
+      genre: null,
+      year: null,
+      track: null,
+      size: 0, // Provide default int value
+      dateAdded: null,
+      dateModified: null,
+      isFavorite: false,
+      playCount: 0,
+      lastPlayed: null,
+    )).toList();
+    _currentIndex = initialIndex;
+    await _audioPlayer.setAudioSources(
+      items.map((item) => AudioSource.uri(Uri.file(item.extras?['filePath'] ?? ''))).toList(),
+      initialIndex: initialIndex,
+      initialPosition: Duration.zero,
+    );
+    if (items.isNotEmpty) {
+      mediaItem.add(items[initialIndex]);
+    }
+  }
+
+  /// Play a custom audio URL (e.g., from YouTube Music)
+  Future<void> playCustomUrl(String url, {String? title, String? artist, String? artUri}) async {
+    // Stop current playback
+    await _audioPlayer.stop();
+    // Set the new source
+    await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(url)));
+    // Set a temporary media item for notification/lockscreen
+    mediaItem.add(MediaItem(
+      id: url,
+      title: title ?? 'YouTube Music',
+      artist: artist ?? '',
+      artUri: artUri != null ? Uri.parse(artUri) : null,
+    ));
+    // Play
+    await _audioPlayer.play();
+  }
   final _audioPlayer = AudioPlayer();
   // Removed deprecated ConcatenatingAudioSource
 

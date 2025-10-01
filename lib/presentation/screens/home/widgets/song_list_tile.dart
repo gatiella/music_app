@@ -158,15 +158,15 @@ class _SongListTileState extends State<SongListTile>
         padding: const EdgeInsets.all(16),
         borderRadius: BorderRadius.circular(20),
         color: widget.isCurrentSong
-            ? MusicAppTheme.primaryPurple.withAlpha((0.1 * 255).toInt())
+            ? MusicAppTheme.primaryPurple.withOpacity(0.1)
             : null,
         border: widget.isCurrentSong
-            ? Border.all(color: Colors.white.withAlpha((0.4 * 255).toInt()), width: 1.5)
+            ? Border.all(color: Colors.white.withOpacity(0.4), width: 1.5)
             : null,
         boxShadow: widget.isCurrentSong
             ? [
                 BoxShadow(
-                  color: MusicAppTheme.primaryPurple.withAlpha(((0.3 * _glowAnimation.value) * 255).toInt()),
+                  color: MusicAppTheme.primaryPurple.withOpacity(0.3 * _glowAnimation.value),
                   blurRadius: 20 * _glowAnimation.value,
                   spreadRadius: 2 * _glowAnimation.value,
                 ),
@@ -194,17 +194,17 @@ class _SongListTileState extends State<SongListTile>
           const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: widget.isCurrentSong
-            ? theme.primaryColor.withAlpha((0.08 * 255).toInt())
-            : (_isPressed
-                  ? (isDark
-                        ? Colors.white.withAlpha((0.05 * 255).toInt())
-                        : Colors.black.withAlpha((0.03 * 255).toInt()))
-                  : Colors.transparent),
+    color: widget.isCurrentSong
+    ? theme.primaryColor.withOpacity(0.08)
+    : (_isPressed
+      ? (isDark
+        ? Colors.white.withOpacity(0.05)
+        : Colors.black.withOpacity(0.03))
+      : Colors.transparent),
         borderRadius: BorderRadius.circular(16),
-        border: widget.isCurrentSong
-            ? Border.all(color: theme.primaryColor.withAlpha((0.2 * 255).toInt()), width: 1)
-            : null,
+    border: widget.isCurrentSong
+      ? Border.all(color: theme.primaryColor.withOpacity(0.2), width: 1)
+      : null,
       ),
       child: Row(
         children: [
@@ -230,9 +230,9 @@ class _SongListTileState extends State<SongListTile>
             height: 60,
             padding: EdgeInsets.zero,
             borderRadius: BorderRadius.circular(16),
-            color: widget.song.albumArt == null
-                ? Colors.white.withAlpha((0.1 * 255).toInt())
-                : null,
+      color: widget.song.albumArt == null
+        ? Colors.white.withOpacity(0.1)
+        : null,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: widget.song.albumArt != null
@@ -263,8 +263,8 @@ class _SongListTileState extends State<SongListTile>
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        MusicAppTheme.primaryPurple.withAlpha((0.8 * 255).toInt()),
-                        MusicAppTheme.accentPink.withAlpha((0.8 * 255).toInt()),
+                        MusicAppTheme.primaryPurple.withOpacity(0.8),
+                        MusicAppTheme.accentPink.withOpacity(0.8),
                       ],
                     ),
                   ),
@@ -278,7 +278,7 @@ class _SongListTileState extends State<SongListTile>
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: Colors.white.withAlpha(((0.3 * math.sin(_waveAnimation.value + index * 0.5).abs()) * 255).toInt()),
+                                  color: Colors.white.withOpacity(0.3 * math.sin(_waveAnimation.value + index * 0.5).abs()),
                                   width: 2,
                                 ),
                               ),
@@ -293,7 +293,7 @@ class _SongListTileState extends State<SongListTile>
                           height: 32,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withAlpha((0.9 * 255).toInt()),
+                            color: Colors.white.withOpacity(0.9),
                           ),
                           child: Icon(
                             widget.isPlaying ? Icons.pause : Icons.play_arrow,
@@ -323,22 +323,22 @@ class _SongListTileState extends State<SongListTile>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  theme.primaryColor.withAlpha((0.1 * 255).toInt()),
-                  theme.primaryColor.withAlpha((0.05 * 255).toInt()),
+                  theme.primaryColor.withOpacity(0.1),
+                  theme.primaryColor.withOpacity(0.05),
                 ],
               )
             : null,
         boxShadow: widget.isCurrentSong
             ? [
                 BoxShadow(
-                  color: theme.primaryColor.withAlpha((0.2 * 255).toInt()),
+                  color: theme.primaryColor.withOpacity(0.2),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
               ]
             : [
                 BoxShadow(
-                  color: Colors.black.withAlpha((0.08 * 255).toInt()),
+                  color: Colors.black.withOpacity(0.08),
                   blurRadius: 4,
                   offset: const Offset(0, 1),
                 ),
@@ -364,7 +364,7 @@ class _SongListTileState extends State<SongListTile>
             if (widget.isCurrentSong)
               Container(
                 decoration: BoxDecoration(
-                  color: theme.primaryColor.withAlpha((0.85 * 255).toInt()),
+                  color: theme.primaryColor.withOpacity(0.85),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(
@@ -394,14 +394,14 @@ class _SongListTileState extends State<SongListTile>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withAlpha((0.2 * 255).toInt()),
-            Colors.white.withAlpha((0.1 * 255).toInt()),
+            Colors.white.withOpacity(0.2),
+            Colors.white.withOpacity(0.1),
           ],
         ),
       ),
       child: Icon(
         Icons.music_note_rounded,
-  color: Colors.white.withAlpha((0.8 * 255).toInt()),
+  color: Colors.white.withOpacity(0.8),
         size: 28,
       ),
     );
@@ -416,14 +416,14 @@ class _SongListTileState extends State<SongListTile>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            theme.primaryColor.withAlpha((0.2 * 255).toInt()),
-            theme.primaryColor.withAlpha((0.1 * 255).toInt()),
+            theme.primaryColor.withOpacity(0.2),
+            theme.primaryColor.withOpacity(0.1),
           ],
         ),
       ),
       child: Icon(
         Icons.music_note_rounded,
-  color: theme.primaryColor.withAlpha((0.6 * 255).toInt()),
+  color: theme.primaryColor.withOpacity(0.6),
         size: 24,
       ),
     );
@@ -434,8 +434,8 @@ class _SongListTileState extends State<SongListTile>
         ? Colors.white
         : theme.colorScheme.onSurface;
     final secondaryColor = widget.useGlass
-  ? Colors.white.withAlpha((0.8 * 255).toInt())
-  : theme.colorScheme.onSurface.withAlpha((0.7 * 255).toInt());
+  ? Colors.white.withOpacity(0.8)
+  : theme.colorScheme.onSurface.withOpacity(0.7);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -468,11 +468,11 @@ class _SongListTileState extends State<SongListTile>
               child: Text(
                 widget.song.artist,
                 style: TextStyle(
-                  color: widget.isCurrentSong && widget.useGlass
-                      ? Colors.white.withAlpha((0.9 * 255).toInt())
-                      : (widget.isCurrentSong
-                            ? MusicAppTheme.primaryPurple.withAlpha((0.8 * 255).toInt())
-                            : secondaryColor),
+          color: widget.isCurrentSong && widget.useGlass
+            ? Colors.white.withOpacity(0.9)
+            : (widget.isCurrentSong
+              ? MusicAppTheme.primaryPurple.withOpacity(0.8)
+              : secondaryColor),
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                 ),
@@ -498,13 +498,13 @@ class _SongListTileState extends State<SongListTile>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: isGlass
-                  ? Colors.red.withAlpha((0.2 * 255).toInt())
-                  : Colors.red.withAlpha((0.1 * 255).toInt()),
+        color: isGlass
+          ? Colors.red.withOpacity(0.2)
+          : Colors.red.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
-              border: isGlass
-                  ? Border.all(color: Colors.red.withAlpha((0.3 * 255).toInt()), width: 1)
-                  : null,
+        border: isGlass
+          ? Border.all(color: Colors.red.withOpacity(0.3), width: 1)
+          : null,
             ),
             child: Icon(
               Icons.favorite,
@@ -519,20 +519,20 @@ class _SongListTileState extends State<SongListTile>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
-            color: isGlass
-                ? Colors.white.withAlpha((0.15 * 255).toInt())
-                : theme.colorScheme.onSurface.withAlpha((0.08 * 255).toInt()),
+      color: isGlass
+        ? Colors.white.withOpacity(0.15)
+        : theme.colorScheme.onSurface.withOpacity(0.08),
             borderRadius: BorderRadius.circular(10),
-            border: isGlass
-                ? Border.all(color: Colors.white.withAlpha((0.2 * 255).toInt()), width: 1)
-                : null,
+      border: isGlass
+        ? Border.all(color: Colors.white.withOpacity(0.2), width: 1)
+        : null,
           ),
           child: Text(
             widget.song.durationString,
             style: TextStyle(
-              color: isGlass
-                  ? Colors.white.withAlpha((0.9 * 255).toInt())
-                  : theme.colorScheme.onSurface.withAlpha((0.6 * 255).toInt()),
+        color: isGlass
+          ? Colors.white.withOpacity(0.9)
+          : theme.colorScheme.onSurface.withOpacity(0.6),
               fontSize: 11,
               fontWeight: FontWeight.w600,
               fontFeatures: const [FontFeature.tabularFigures()],
@@ -545,13 +545,13 @@ class _SongListTileState extends State<SongListTile>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: isGlass
-                  ? MusicAppTheme.primaryPurple.withAlpha((0.2 * 255).toInt())
-                  : theme.primaryColor.withAlpha((0.1 * 255).toInt()),
+        color: isGlass
+          ? MusicAppTheme.primaryPurple.withOpacity(0.2)
+          : theme.primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
               border: isGlass
                   ? Border.all(
-                      color: MusicAppTheme.primaryPurple.withAlpha((0.3 * 255).toInt()),
+                      color: MusicAppTheme.primaryPurple.withOpacity(0.3),
                       width: 1,
                     )
                   : null,
@@ -562,17 +562,17 @@ class _SongListTileState extends State<SongListTile>
                 Icon(
                   Icons.play_circle_outline,
                   size: 10,
-                  color: isGlass
-                      ? Colors.white.withAlpha((0.9 * 255).toInt())
-                      : theme.primaryColor,
+          color: isGlass
+            ? Colors.white.withOpacity(0.9)
+            : theme.primaryColor,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   widget.song.playCount.toString(),
                   style: TextStyle(
-                    color: isGlass
-                        ? Colors.white.withAlpha((0.9 * 255).toInt())
-                        : theme.primaryColor,
+          color: isGlass
+            ? Colors.white.withOpacity(0.9)
+            : theme.primaryColor,
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),
@@ -596,7 +596,7 @@ class _SongListTileState extends State<SongListTile>
               width: 44,
               height: 44,
               borderRadius: BorderRadius.circular(22),
-              color: Colors.white.withAlpha((0.1 * 255).toInt()),
+              color: Colors.white.withOpacity(0.1),
               child: Center(
                 child: SizedBox(
                   width: 24,
@@ -620,11 +620,11 @@ class _SongListTileState extends State<SongListTile>
       width: 44,
       height: 44,
       borderRadius: BorderRadius.circular(22),
-  color: Colors.white.withAlpha((0.1 * 255).toInt()),
+  color: Colors.white.withOpacity(0.1),
       child: Icon(
         Icons.more_vert_rounded,
         size: 20,
-  color: Colors.white.withAlpha((0.8 * 255).toInt()),
+  color: Colors.white.withOpacity(0.8),
       ),
     );
   }
@@ -636,7 +636,7 @@ class _SongListTileState extends State<SongListTile>
         height: 40,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: theme.primaryColor.withAlpha((0.1 * 255).toInt()),
+          color: theme.primaryColor.withOpacity(0.1),
         ),
         child: Center(
           child: SizedBox(
@@ -666,7 +666,7 @@ class _SongListTileState extends State<SongListTile>
           child: Icon(
             Icons.more_vert_rounded,
             size: 20,
-            color: theme.colorScheme.onSurface.withAlpha((0.6 * 255).toInt()),
+            color: theme.colorScheme.onSurface.withOpacity(0.6),
           ),
         ),
       ),

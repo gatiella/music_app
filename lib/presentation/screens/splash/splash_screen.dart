@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import '../home/home_screen.dart';
 import 'package:music_app/app/theme.dart';
 
-
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -226,23 +225,24 @@ class _SplashScreenState extends State<SplashScreen>
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.3),
-                                    Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.1),
+                                    // FIXED: Using proper opacity method
+                                    Theme.of(context).colorScheme.onPrimary.withOpacity(0.3),
+                                    Theme.of(context).colorScheme.onPrimary.withOpacity(0.1),
                                   ],
                                 ),
                                 border: Border.all(
-                                  color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.3),
+                                  color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.3),
                                   width: 2,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
                                     blurRadius: 30,
                                     spreadRadius: 0,
                                     offset: const Offset(0, 10),
                                   ),
                                   BoxShadow(
-                                    color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.1),
+                                    color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.1),
                                     blurRadius: 10,
                                     spreadRadius: 0,
                                     offset: const Offset(0, -5),
@@ -256,7 +256,7 @@ class _SplashScreenState extends State<SplashScreen>
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                     colors: [
-                                      Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.2),
+                                      Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
                                       Colors.transparent
                                     ],
                                   ),
@@ -289,7 +289,7 @@ class _SplashScreenState extends State<SplashScreen>
                                   letterSpacing: 1.5,
                                   shadows: [
                                     Shadow(
-                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
                                       blurRadius: 10,
                                       offset: const Offset(0, 5),
                                     ),
@@ -301,7 +301,7 @@ class _SplashScreenState extends State<SplashScreen>
                                 'Your music, amplified',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.9),
+                                  color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.9),
                                   fontWeight: FontWeight.w400,
                                   letterSpacing: 0.5,
                                 ),
@@ -356,7 +356,8 @@ class _SplashScreenState extends State<SplashScreen>
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.3),
+                  // FIXED: Using proper opacity method
+                  Theme.of(context).colorScheme.onPrimary.withOpacity(0.3),
                   Colors.transparent
                 ],
               ),
@@ -390,7 +391,7 @@ class LoadingPainter extends CustomPainter {
 
     // Background circle
     final bgPaint = Paint()
-  ..color = Colors.white.withValues(alpha: 0.2)
+      ..color = Colors.white.withOpacity(0.2) // FIXED: Using proper opacity method
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke;
 

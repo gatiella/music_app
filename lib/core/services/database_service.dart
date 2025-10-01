@@ -5,6 +5,112 @@ import '../../data/models/song.dart';
 import '../../data/models/playlist.dart';
 
 class DatabaseService {
+
+  // YT Music Playlists Operations
+  Future<int> insertYTMusicPlaylist(Map<String, dynamic> playlist) async {
+    try {
+      return await _databaseHelper.insertYTMusicPlaylist(playlist);
+    } catch (e) {
+      throw DatabaseException('Failed to insert YT Music playlist: $e');
+    }
+  }
+
+  Future<int> deleteYTMusicPlaylist(String playlistId) async {
+    try {
+      return await _databaseHelper.deleteYTMusicPlaylist(playlistId);
+    } catch (e) {
+      throw DatabaseException('Failed to delete YT Music playlist: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAllYTMusicPlaylists() async {
+    try {
+      return await _databaseHelper.getAllYTMusicPlaylists();
+    } catch (e) {
+      throw DatabaseException('Failed to get YT Music playlists: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>?> getYTMusicPlaylistById(String playlistId) async {
+    try {
+      return await _databaseHelper.getYTMusicPlaylistById(playlistId);
+    } catch (e) {
+      throw DatabaseException('Failed to get YT Music playlist by ID: $e');
+    }
+  }
+
+  Future<int> updateYTMusicPlaylist(String playlistId, {String? name, String? coverImageUrl, String? description, List<String>? tags}) async {
+    try {
+      return await _databaseHelper.updateYTMusicPlaylist(playlistId, name: name, coverImageUrl: coverImageUrl, description: description, tags: tags);
+    } catch (e) {
+      throw DatabaseException('Failed to update YT Music playlist: $e');
+    }
+  }
+
+  Future<void> addYTMusicItemsToPlaylist(String playlistId, List<String> videoIds) async {
+    try {
+      await _databaseHelper.addYTMusicItemsToPlaylist(playlistId, videoIds);
+    } catch (e) {
+      throw DatabaseException('Failed to batch add items to YT Music playlist: $e');
+    }
+  }
+
+  Future<void> removeYTMusicItemsFromPlaylist(String playlistId, List<String> videoIds) async {
+    try {
+      await _databaseHelper.removeYTMusicItemsFromPlaylist(playlistId, videoIds);
+    } catch (e) {
+      throw DatabaseException('Failed to batch remove items from YT Music playlist: $e');
+    }
+  }
+
+  Future<void> reorderYTMusicPlaylistItems(String playlistId, List<String> orderedVideoIds) async {
+    try {
+      await _databaseHelper.reorderYTMusicPlaylistItems(playlistId, orderedVideoIds);
+    } catch (e) {
+      throw DatabaseException('Failed to reorder YT Music playlist items: $e');
+    }
+  }
+
+  Future<List<String>> exportYTMusicPlaylist(String playlistId) async {
+    try {
+      return await _databaseHelper.exportYTMusicPlaylist(playlistId);
+    } catch (e) {
+      throw DatabaseException('Failed to export YT Music playlist: $e');
+    }
+  }
+
+  // YT Music Favorites Operations
+  Future<int> insertYTMusicFavorite(Map<String, dynamic> favorite) async {
+    try {
+      return await _databaseHelper.insertYTMusicFavorite(favorite);
+    } catch (e) {
+      throw DatabaseException('Failed to insert YT Music favorite: $e');
+    }
+  }
+
+  Future<int> deleteYTMusicFavorite(String videoId) async {
+    try {
+      return await _databaseHelper.deleteYTMusicFavorite(videoId);
+    } catch (e) {
+      throw DatabaseException('Failed to delete YT Music favorite: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAllYTMusicFavorites() async {
+    try {
+      return await _databaseHelper.getAllYTMusicFavorites();
+    } catch (e) {
+      throw DatabaseException('Failed to get YT Music favorites: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>?> getYTMusicFavoriteById(String videoId) async {
+    try {
+      return await _databaseHelper.getYTMusicFavoriteById(videoId);
+    } catch (e) {
+      throw DatabaseException('Failed to get YT Music favorite by ID: $e');
+    }
+  }
   static final DatabaseService _instance = DatabaseService._internal();
   factory DatabaseService() => _instance;
   DatabaseService._internal();

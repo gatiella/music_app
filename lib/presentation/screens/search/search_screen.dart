@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/music_library_provider.dart';
 import '../../providers/audio_player_provider.dart';
 import '../../../data/models/song.dart';
+import '../now_playing/now_playing_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -87,13 +88,23 @@ class _SearchScreenState extends State<SearchScreen> {
             // Search Input
             Padding(
               padding: const EdgeInsets.all(16),
-              child: GlassTextField(
-                controller: _searchController,
-                hintText: 'Search songs, artists, albums...',
-                prefixIcon: const Icon(Icons.search, color: Colors.white70),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
+              child: Theme(
+                data: Theme.of(context).copyWith(
+                  inputDecorationTheme: const InputDecorationTheme(
+                    hintStyle: TextStyle(color: Colors.white70),
+                  ),
+                  textTheme: Theme.of(context).textTheme.copyWith(
+                    bodyLarge: const TextStyle(color: Colors.white),
+                  ),
+                ),
+                child: GlassTextField(
+                  controller: _searchController,
+                  hintText: 'Search songs, artists, albums...',
+                  prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                 ),
               ),
             ),
@@ -351,8 +362,14 @@ class _SearchScreenState extends State<SearchScreen> {
                   const Spacer(),
                   if (_searchResults.isNotEmpty) ...[
                     GlassButton(
-                      onPressed: () {
-                        audioProvider.playPlaylist(_searchResults);
+                      onPressed: () async {
+                        await audioProvider.playPlaylist(_searchResults);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const NowPlayingScreen(),
+                          ),
+                        );
                       },
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -372,10 +389,16 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                     const SizedBox(width: 8),
                     GlassButton(
-                      onPressed: () {
+                      onPressed: () async {
                         final shuffled = List<Song>.from(_searchResults);
                         shuffled.shuffle();
-                        audioProvider.playPlaylist(shuffled);
+                        await audioProvider.playPlaylist(shuffled);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const NowPlayingScreen(),
+                          ),
+                        );
                       },
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -453,10 +476,16 @@ class _SearchScreenState extends State<SearchScreen> {
                         ),
                       ),
                     ),
-                    onTap: () {
-                      audioProvider.playPlaylist(
+                    onTap: () async {
+                      await audioProvider.playPlaylist(
                         _searchResults,
                         startIndex: index,
+                      );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NowPlayingScreen(),
+                        ),
                       );
                     },
                     isPlaying: isCurrentSong && audioProvider.isPlaying,

@@ -1,3 +1,4 @@
+import 'package:music_app/data/models/downloaded_song.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
@@ -5,6 +6,36 @@ import 'package:music_app/core/services/audio_service.dart';
 import 'package:music_app/data/models/song.dart';
 
 class AudioPlayerProvider extends ChangeNotifier {
+
+  // Play a queue of DownloadedSong objects
+  Future<void> playDownloadedQueue(List<DownloadedSong> songs, {int startIndex = 0}) async {
+    final mediaItems = songs.map((s) => s.toMediaItem()).toList();
+    await _audioHandler.setDownloadedQueue(mediaItems, initialIndex: startIndex);
+    notifyListeners();
+    await play();
+  }
+
+  // Toggle shuffle for downloaded queue
+  Future<void> toggleShuffleDownloaded() async {
+    _shuffleMode = !_shuffleMode;
+    await _audioHandler.setShuffleMode(
+      _shuffleMode ? AudioServiceShuffleMode.all : AudioServiceShuffleMode.none,
+    );
+    notifyListeners();
+  }
+
+  // Set repeat/loop mode for downloaded queue
+  Future<void> setDownloadedLoopMode(LoopMode loopMode) async {
+    _loopMode = loopMode;
+    await _audioHandler.setLoopMode(loopMode);
+    notifyListeners();
+  }
+
+  /// Play a custom audio URL (e.g., from YouTube Music)
+  Future<void> playCustomUrl(String url, {String? title, String? artist, String? artUri}) async {
+    await _audioHandler.playCustomUrl(url, title: title, artist: artist, artUri: artUri);
+    notifyListeners();
+  }
   final AudioPlayerService _audioHandler;
 
   List<Song> _queue = [];

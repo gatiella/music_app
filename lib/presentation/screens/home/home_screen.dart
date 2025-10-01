@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:music_app/app/glassmorphism_widgets.dart';
 import 'package:music_app/app/theme.dart';
 import 'package:music_app/core/widgets/mini_player.dart';
+import 'package:music_app/presentation/screens/ytmusic_search_screen.dart';
 import 'dart:math' as math;
 import 'package:provider/provider.dart';
 import '../../providers/audio_player_provider.dart';
@@ -28,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final List<Widget> _pages = [
     const LibraryScreen(),
     const SearchScreen(),
+    const YTMusicSearchScreen(),
     const SettingsScreen(),
   ];
 
@@ -56,22 +58,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Removed extendBodyBehindAppBar to fix layout assertion error
       extendBody: true,
-      appBar: AppBar(
-        title: const Text('Music App'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.music_video),
-            tooltip: 'YouTube Music',
-            onPressed: () {
-              Navigator.pushNamed(context, '/ytmusic');
-            },
-          ),
-        ],
-      ),
       body: AnimatedBuilder(
         animation: _gradientAnimation,
         builder: (context, child) {
@@ -189,6 +176,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             label: 'Search',
           ),
           GlassBottomNavItem(
+            icon: Icons.music_video_outlined,
+            activeIcon: Icons.music_video,
+            label: 'YT Music',
+          ),
+          GlassBottomNavItem(
             icon: Icons.settings_outlined,
             activeIcon: Icons.settings,
             label: 'Settings',
@@ -224,7 +216,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: RadialGradient(
-                colors: [Theme.of(context).colorScheme.onPrimary.withAlpha((0.2 * 255).toInt()), Colors.transparent],
+                colors: [
+                  // FIXED: Using proper color opacity method
+                  Theme.of(context).colorScheme.onPrimary.withOpacity(0.2), 
+                  Colors.transparent
+                ],
               ),
             ),
           ),

@@ -13,73 +13,246 @@ class FileService {
 
   final OnAudioQuery _audioQuery = OnAudioQuery();
 
-  /// Scan device for audio files
+  /// Scan device for audio files with multiple fallback strategies
   Future<List<Song>> scanAudioFiles() async {
     try {
-      debugPrint('Starting audio file scan...');
+      debugPrint('=== Starting Enhanced Audio File Scan ===');
 
       // Check permissions first
       bool hasPermission = await _audioQuery.permissionsStatus();
+      debugPrint('Initial permission status: $hasPermission');
+      
       if (!hasPermission) {
         hasPermission = await _audioQuery.permissionsRequest();
+        debugPrint('Permission after request: $hasPermission');
         if (!hasPermission) {
           throw FileServiceException('Storage permission denied');
         }
       }
 
-      // Query songs from device
-      final List<SongModel> songModels = await _audioQuery.querySongs(
-        sortType: null,
+      // Strategy 1: Try standard query without filters (most reliable)
+      debugPrint('Strategy 1: Querying with no filters...');
+      List<SongModel> songModels = await _audioQuery.querySongs(
+        sortType: SongSortType.TITLE,
         orderType: OrderType.ASC_OR_SMALLER,
-        uriType: UriType.EXTERNAL,
-        ignoreCase: true,
       );
+      debugPrint('Found ${songModels.length} songs with no filters');
 
-      debugPrint('Found ${songModels.length} audio files');
+      // Strategy 2: Try EXTERNAL uri type if first failed
+      if (songModels.isEmpty) {
+        debugPrint('Strategy 2: Querying with EXTERNAL uri...');
+        songModels = await _audioQuery.querySongs(
+          sortType: SongSortType.TITLE,
+          orderType: OrderType.ASC_OR_SMALLER,
+          uriType: UriType.EXTERNAL,
+        );
+        debugPrint('Found ${songModels.length} songs with EXTERNAL uri');
+      }
 
-      // Convert to our Song model
+      // Strategy 3: Try INTERNAL uri type
+      if (songModels.isEmpty) {
+        debugPrint('Strategy 3: Querying with INTERNAL uri...');
+        songModels = await _audioQuery.querySongs(
+          sortType: SongSortType.TITLE,
+          orderType: OrderType.ASC_OR_SMALLER,
+          uriType: UriType.INTERNAL,
+        );
+        debugPrint('Found ${songModels.length} songs with INTERNAL uri');
+      }
+
+      // Strategy 4: Direct file system scan as fallback
+      if (songModels.isEmpty) {
+        debugPrint('Strategy 4: Performing direct file system scan...');
+        return await _directFileSystemScan();
+      }
+
+      // Log MediaStore status for debugging
+      if (songModels.isEmpty) {
+        await _logMediaStoreStatus();
+      }
+
+      // Convert and validate songs
+      debugPrint('Processing ${songModels.length} songs...');
       final List<Song> songs = [];
+      int skippedCount = 0;
+
       for (final songModel in songModels) {
         try {
-          // Validate file exists and is accessible
-          if (await FileUtils.fileExists(songModel.data)) {
-            final song = await _convertSongModel(songModel);
-            songs.add(song);
+          // Basic validation
+          if (songModel.data.isEmpty) {
+            skippedCount++;
+            continue;
           }
+
+          // Check if file exists
+          final fileExists = await FileUtils.fileExists(songModel.data);
+          if (!fileExists) {
+            debugPrint('Skipping non-existent file: ${songModel.data}');
+            skippedCount++;
+            continue;
+          }
+
+          final song = await _convertSongModel(songModel);
+          songs.add(song);
         } catch (e) {
           debugPrint('Error processing song ${songModel.title}: $e');
-          // Continue with other songs
+          skippedCount++;
         }
       }
 
-      debugPrint('Successfully processed ${songs.length} songs');
+      debugPrint('=== Scan Complete ===');
+      debugPrint('Total found: ${songModels.length}');
+      debugPrint('Successfully processed: ${songs.length}');
+      debugPrint('Skipped: $skippedCount');
+      
+      if (songs.isNotEmpty) {
+        debugPrint('Sample songs:');
+        for (var song in songs.take(3)) {
+          debugPrint('  - "${song.title}" by ${song.artist}');
+          debugPrint('    Path: ${song.path}');
+        }
+      }
+
       return songs;
-    } catch (e) {
-      debugPrint('Error scanning audio files: $e');
-      throw FileServiceException('Failed to scan audio files: $e');
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error scanning audio files: $e');
+      debugPrint('Stack trace: $stackTrace');
+      
+      // Last resort: try direct file system scan
+      try {
+        debugPrint('Attempting fallback file system scan...');
+        return await _directFileSystemScan();
+      } catch (fallbackError) {
+        debugPrint('Fallback scan also failed: $fallbackError');
+        throw FileServiceException('Failed to scan audio files: $e');
+      }
     }
   }
 
-  /// Convert SongModel to Song - Fixed year property issue
-  Future<Song> _convertSongModel(SongModel songModel) async {
-    // Get file size
-    final fileSize = await FileUtils.getFileSize(songModel.data);
+  /// Direct file system scan as fallback when MediaStore is empty
+  Future<List<Song>> _directFileSystemScan() async {
+    debugPrint('Starting direct file system scan...');
+    final List<Song> songs = [];
+    int fileCount = 0;
 
-    // Get file modification date
-    final modificationDate = await FileUtils.getFileModificationDate(
-      songModel.data,
+    // Common music directories on Android
+    final musicDirs = [
+      '/storage/emulated/0/Music',
+      '/storage/emulated/0/Download',
+      '/storage/emulated/0/Downloads',
+      '/storage/emulated/0/DCIM',
+      '/storage/emulated/0/Audiobooks',
+      '/storage/emulated/0/Podcasts',
+    ];
+
+    for (final dirPath in musicDirs) {
+      try {
+        final dir = Directory(dirPath);
+        if (!await dir.exists()) {
+          debugPrint('Directory does not exist: $dirPath');
+          continue;
+        }
+
+        debugPrint('Scanning directory: $dirPath');
+        
+        await for (final entity in dir.list(recursive: true, followLinks: false)) {
+          if (entity is File) {
+            fileCount++;
+            if (FileUtils.isAudioFile(entity.path)) {
+              try {
+                final song = await _createSongFromFile(entity);
+                songs.add(song);
+              } catch (e) {
+                debugPrint('Error processing file ${entity.path}: $e');
+              }
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint('Error scanning directory $dirPath: $e');
+      }
+    }
+
+    debugPrint('Direct scan found ${songs.length} audio files (checked $fileCount files)');
+    return songs;
+  }
+
+  /// Create Song model from file without MediaStore
+  Future<Song> _createSongFromFile(File file) async {
+    final fileName = file.path.split('/').last;
+    final fileNameWithoutExt = fileName.replaceAll(RegExp(r'\.[^.]+$'), '');
+    
+    // Try to extract metadata from filename (common format: Artist - Title.mp3)
+    String title = fileNameWithoutExt;
+    String artist = 'Unknown Artist';
+    
+    if (fileNameWithoutExt.contains(' - ')) {
+      final parts = fileNameWithoutExt.split(' - ');
+      if (parts.length >= 2) {
+        artist = parts[0].trim();
+        title = parts.sublist(1).join(' - ').trim();
+      }
+    }
+
+    final fileSize = await FileUtils.getFileSize(file.path);
+    final modificationDate = await FileUtils.getFileModificationDate(file.path);
+
+    // Generate a pseudo-ID based on file path hash
+    final pathHash = file.path.hashCode.abs();
+
+    return Song(
+      id: pathHash,
+      title: title,
+      artist: artist,
+      album: 'Unknown Album',
+      albumArt: null,
+      path: file.path,
+      duration: 0, // Can't get duration without MediaStore
+      genre: null,
+      year: null,
+      track: null,
+      size: fileSize,
+      dateAdded: modificationDate,
+      dateModified: modificationDate,
     );
+  }
+
+  /// Log MediaStore status for debugging
+  Future<void> _logMediaStoreStatus() async {
+    try {
+      final albums = await _audioQuery.queryAlbums();
+      final artists = await _audioQuery.queryArtists();
+      debugPrint('MediaStore Status:');
+      debugPrint('  - Albums indexed: ${albums.length}');
+      debugPrint('  - Artists indexed: ${artists.length}');
+      
+      if (albums.isEmpty && artists.isEmpty) {
+        debugPrint('⚠️ MediaStore appears to be empty or not indexed');
+        debugPrint('This usually happens when:');
+        debugPrint('  1. Music files were recently added');
+        debugPrint('  2. Device media scanner hasn\'t run yet');
+        debugPrint('  3. Files are in non-standard locations');
+      }
+    } catch (e) {
+      debugPrint('Could not query MediaStore status: $e');
+    }
+  }
+
+  /// Convert SongModel to Song
+  Future<Song> _convertSongModel(SongModel songModel) async {
+    final fileSize = await FileUtils.getFileSize(songModel.data);
+    final modificationDate = await FileUtils.getFileModificationDate(songModel.data);
 
     return Song(
       id: songModel.id,
       title: songModel.title,
       artist: songModel.artist ?? 'Unknown Artist',
       album: songModel.album ?? 'Unknown Album',
-      albumArt: null, // Will be handled separately
+      albumArt: null,
       path: songModel.data,
       duration: songModel.duration ?? 0,
       genre: songModel.genre,
-      year: null, // SongModel doesn't have year property, set to null
+      year: null,
       track: songModel.track,
       size: fileSize,
       dateAdded: songModel.dateAdded != null
@@ -144,13 +317,11 @@ class FileService {
   /// Get or create album artwork
   Future<String?> getOrCreateAlbumArtwork(int songId) async {
     try {
-      // First check if we have cached artwork
       String? cachedPath = await getCachedAlbumArtwork(songId);
       if (cachedPath != null) {
         return cachedPath;
       }
 
-      // Try to get artwork from the audio file
       final artworkData = await getAlbumArtwork(songId);
       if (artworkData != null) {
         return await saveAlbumArtwork(songId, artworkData);
@@ -159,51 +330,6 @@ class FileService {
       return null;
     } catch (e) {
       debugPrint('Error getting or creating album artwork: $e');
-      return null;
-    }
-  }
-
-  /// Scan specific directory for audio files
-  Future<List<File>> scanDirectory(String dirPath) async {
-    try {
-      return await FileUtils.getAudioFilesInDirectory(dirPath);
-    } catch (e) {
-      throw FileServiceException('Failed to scan directory: $e');
-    }
-  }
-
-  /// Get audio file metadata
-  Future<Map<String, dynamic>?> getAudioMetadata(String filePath) async {
-    try {
-      if (!await FileUtils.fileExists(filePath)) {
-        return null;
-      }
-
-      // Use on_audio_query to get metadata
-      final songModels = await _audioQuery.querySongs(
-        path: filePath,
-        sortType: null,
-        orderType: OrderType.ASC_OR_SMALLER,
-        uriType: UriType.EXTERNAL,
-      );
-
-      if (songModels.isNotEmpty) {
-        final song = songModels.first;
-        return {
-          'title': song.title,
-          'artist': song.artist ?? 'Unknown Artist',
-          'album': song.album ?? 'Unknown Album',
-          'duration': song.duration ?? 0,
-          'genre': song.genre,
-          'year': null, // SongModel doesn't have year property
-          'track': song.track,
-          'size': song.size,
-        };
-      }
-
-      return null;
-    } catch (e) {
-      debugPrint('Error getting audio metadata: $e');
       return null;
     }
   }
@@ -230,42 +356,6 @@ class FileService {
     }
   }
 
-  /// Get storage directories
-  Future<List<Directory>> getStorageDirectories() async {
-    try {
-      final List<Directory> directories = [];
-
-      // Add external storage directories
-      if (Platform.isAndroid) {
-        final externalDirs = await getExternalStorageDirectories();
-        if (externalDirs != null) {
-          directories.addAll(externalDirs);
-        }
-      }
-
-      // Add application documents directory
-      final documentsDir = await getApplicationDocumentsDirectory();
-      directories.add(documentsDir);
-
-      return directories;
-    } catch (e) {
-      debugPrint('Error getting storage directories: $e');
-      return [];
-    }
-  }
-
-  /// Get common music directories
-  List<String> getCommonMusicDirectories() {
-    return [
-      '/storage/emulated/0/Music',
-      '/storage/emulated/0/Download',
-      '/storage/emulated/0/Downloads',
-      '/sdcard/Music',
-      '/sdcard/Download',
-      '/sdcard/Downloads',
-    ];
-  }
-
   /// Validate audio file
   Future<bool> validateAudioFile(String filePath) async {
     try {
@@ -289,6 +379,30 @@ class FileService {
     } catch (e) {
       debugPrint('Error validating audio file: $e');
       return false;
+    }
+  }
+
+  /// Get storage directories
+  Future<List<Directory>> getStorageDirectories() async {
+    try {
+      final List<Directory> directories = [];
+
+      // Add external storage directories
+      if (Platform.isAndroid) {
+        final externalDirs = await getExternalStorageDirectories();
+        if (externalDirs != null) {
+          directories.addAll(externalDirs);
+        }
+      }
+
+      // Add application documents directory
+      final documentsDir = await getApplicationDocumentsDirectory();
+      directories.add(documentsDir);
+
+      return directories;
+    } catch (e) {
+      debugPrint('Error getting storage directories: $e');
+      return [];
     }
   }
 
@@ -334,158 +448,10 @@ class FileService {
       return 0;
     }
   }
-
-  /// Create backup of music library data
-  Future<bool> createBackup(Map<String, dynamic> data) async {
-    try {
-      final documentsDir = await getApplicationDocumentsDirectory();
-      final backupDir = Directory('${documentsDir.path}/backups');
-
-      if (!await backupDir.exists()) {
-        await backupDir.create(recursive: true);
-      }
-
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final backupPath =
-          '${backupDir.path}/music_library_backup_$timestamp.json';
-
-      final backupContent = {
-        'version': AppConstants.appVersion,
-        'backupDate': DateTime.now().toIso8601String(),
-        'data': data,
-      };
-
-      return await FileUtils.saveTextToFile(
-        backupPath,
-        backupContent.toString(),
-      );
-    } catch (e) {
-      debugPrint('Error creating backup: $e');
-      return false;
-    }
-  }
-
-  /// Restore from backup
-  Future<Map<String, dynamic>?> restoreFromBackup(String backupPath) async {
-    try {
-      final backupContent = await FileUtils.readTextFromFile(backupPath);
-      if (backupContent == null) {
-        return null;
-      }
-
-      // Parse JSON content
-      // Note: In a real implementation, you'd use dart:convert
-      // For now, returning a placeholder
-      return {'restored': true};
-    } catch (e) {
-      debugPrint('Error restoring from backup: $e');
-      return null;
-    }
-  }
-
-  /// Get all backup files
-  Future<List<File>> getBackupFiles() async {
-    try {
-      final documentsDir = await getApplicationDocumentsDirectory();
-      final backupDir = Directory('${documentsDir.path}/backups');
-
-      if (!await backupDir.exists()) {
-        return [];
-      }
-
-      final List<File> backupFiles = [];
-      await for (final file in backupDir.list()) {
-        if (file is File && file.path.endsWith('.json')) {
-          backupFiles.add(file);
-        }
-      }
-
-      // Sort by modification date (newest first)
-      backupFiles.sort((a, b) {
-        final aStat = a.statSync();
-        final bStat = b.statSync();
-        return bStat.modified.compareTo(aStat.modified);
-      });
-
-      return backupFiles;
-    } catch (e) {
-      debugPrint('Error getting backup files: $e');
-      return [];
-    }
-  }
-
-  /// Delete old backup files (keep only recent ones)
-  Future<void> cleanupBackups({int maxBackups = 5}) async {
-    try {
-      final backupFiles = await getBackupFiles();
-
-      if (backupFiles.length > maxBackups) {
-        final filesToDelete = backupFiles.skip(maxBackups);
-        for (final file in filesToDelete) {
-          await file.delete();
-        }
-      }
-    } catch (e) {
-      debugPrint('Error cleaning up backups: $e');
-    }
-  }
-
-  /// Check if file is corrupted
-  Future<bool> isFileCorrupted(String filePath) async {
-    try {
-      final file = File(filePath);
-
-      // Basic checks
-      if (!await file.exists()) {
-        return true;
-      }
-
-      final stat = await file.stat();
-      if (stat.size == 0) {
-        return true;
-      }
-
-      // Try to read a small portion of the file
-      final bytes = await file.openRead(0, 1024).first;
-      if (bytes.isEmpty) {
-        return true;
-      }
-
-      return false;
-    } catch (e) {
-      debugPrint('Error checking file corruption: $e');
-      return true; // Assume corrupted if we can't check
-    }
-  }
-
-  /// Get file modification time
-  Future<DateTime?> getFileModificationTime(String filePath) async {
-    try {
-      return await FileUtils.getFileModificationDate(filePath);
-    } catch (e) {
-      debugPrint('Error getting file modification time: $e');
-      return null;
-    }
-  }
-
-  /// Check if file has been modified since last scan
-  Future<bool> hasFileBeenModified(
-    String filePath,
-    DateTime? lastScanTime,
-  ) async {
-    if (lastScanTime == null) return true;
-
-    final modificationTime = await getFileModificationTime(filePath);
-    if (modificationTime == null) return true;
-
-    return modificationTime.isAfter(lastScanTime);
-  }
 }
 
-/// Custom exception for file service operations
 class FileServiceException implements Exception {
   final String message;
-
   const FileServiceException(this.message);
 
   @override

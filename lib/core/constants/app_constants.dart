@@ -1,4 +1,6 @@
 class AppConstants {
+  static const String ytMusicPlaylistsTable = 'ytmusic_playlists';
+  static const String ytMusicPlaylistItemsTable = 'ytmusic_playlist_items';
   // App Information
   static const String appName = 'Music Player';
   static const String appVersion = '1.0.0';
@@ -14,6 +16,8 @@ class AppConstants {
   static const String playlistsTable = 'playlists';
   static const String playlistSongsTable = 'playlist_songs';
   static const String favoritesTable = 'favorites';
+  static const String ytMusicFavoritesTable = 'ytmusic_favorites';
+  static const String downloadedSongsTable = 'downloaded_songs';
 
   // Audio Service
   static const String audioChannelId =
