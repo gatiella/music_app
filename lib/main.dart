@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:music_app/core/services/ytmusic_sync_service.dart';
 import 'package:music_app/presentation/providers/offline_library_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:audio_service/audio_service.dart';
@@ -13,6 +14,9 @@ import 'data/repositories/playlist_repository.dart';
 import 'presentation/providers/theme_provider.dart';
 import 'presentation/providers/ytmusic_favorites_provider.dart';
 import 'presentation/providers/ytmusic_playlists_provider.dart';
+import 'presentation/providers/ytmusic_auth_provider.dart'; 
+import 'presentation/providers/ytmusic_sync_provider.dart';
+import 'presentation/screens/settings/settings_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,6 +60,9 @@ class MusicPlayerApp extends StatelessWidget {
     // Instantiate repositories once
     final musicRepository = MusicRepository();
     final playlistRepository = PlaylistRepository();
+    
+    // Create SettingsModel instance
+    final settingsModel = SettingsModel();
 
     return MultiProvider(
       providers: [
@@ -80,10 +87,23 @@ class MusicPlayerApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => OfflineLibraryProvider(),
         ),
+        // Add these missing providers
+        ChangeNotifierProvider(
+          create: (_) => YTMusicAuthProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => YTMusicSyncProvider(
+            syncService: YTMusicSyncService(),
+          ),
+        ),
+        
       ],
       child: MusicAppInitializer(
         hasPermission: hasPermission,
-        child: const MyApp(),
+        child: SettingsProvider(
+          notifier: settingsModel,
+          child: const MyApp(),
+        ),
       ),
     );
   }

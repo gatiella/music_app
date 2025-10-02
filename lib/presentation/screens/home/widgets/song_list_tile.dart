@@ -151,33 +151,31 @@ class _SongListTileState extends State<SongListTile>
 
   Widget _buildGlassTile(ThemeData theme) {
     return Container(
-      margin:
-          widget.margin ??
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      margin: widget.margin ?? const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: GlassContainer(
-        padding: const EdgeInsets.all(16),
-        borderRadius: BorderRadius.circular(20),
+        padding: const EdgeInsets.all(12),
+        borderRadius: BorderRadius.circular(16),
         color: widget.isCurrentSong
             ? MusicAppTheme.primaryPurple.withOpacity(0.1)
             : null,
         border: widget.isCurrentSong
-            ? Border.all(color: Colors.white.withOpacity(0.4), width: 1.5)
+            ? Border.all(color: Colors.white.withOpacity(0.4), width: 1.0)
             : null,
         boxShadow: widget.isCurrentSong
             ? [
                 BoxShadow(
                   color: MusicAppTheme.primaryPurple.withOpacity(0.3 * _glowAnimation.value),
-                  blurRadius: 20 * _glowAnimation.value,
-                  spreadRadius: 2 * _glowAnimation.value,
+                  blurRadius: 15 * _glowAnimation.value,
+                  spreadRadius: 1 * _glowAnimation.value,
                 ),
               ]
             : null,
         child: Row(
           children: [
             _buildGlassAlbumArt(theme),
-            const SizedBox(width: 16),
-            Expanded(child: _buildSongInfo(theme)),
             const SizedBox(width: 12),
+            Expanded(child: _buildSongInfo(theme)),
+            const SizedBox(width: 8),
             _buildGlassTrailingActions(theme),
           ],
         ),
@@ -189,29 +187,27 @@ class _SongListTileState extends State<SongListTile>
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
-      margin:
-          widget.margin ??
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      padding: const EdgeInsets.all(12),
+      margin: widget.margin ?? const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-    color: widget.isCurrentSong
-    ? theme.primaryColor.withOpacity(0.08)
-    : (_isPressed
-      ? (isDark
-        ? Colors.white.withOpacity(0.05)
-        : Colors.black.withOpacity(0.03))
-      : Colors.transparent),
-        borderRadius: BorderRadius.circular(16),
-    border: widget.isCurrentSong
-      ? Border.all(color: theme.primaryColor.withOpacity(0.2), width: 1)
-      : null,
+        color: widget.isCurrentSong
+            ? theme.primaryColor.withOpacity(0.08)
+            : (_isPressed
+                ? (isDark
+                    ? Colors.white.withOpacity(0.05)
+                    : Colors.black.withOpacity(0.03))
+                : Colors.transparent),
+        borderRadius: BorderRadius.circular(14),
+        border: widget.isCurrentSong
+            ? Border.all(color: theme.primaryColor.withOpacity(0.2), width: 1)
+            : null,
       ),
       child: Row(
         children: [
           _buildRegularAlbumArt(theme),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(child: _buildSongInfo(theme)),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           _buildRegularTrailingActions(theme),
         ],
       ),
@@ -220,26 +216,26 @@ class _SongListTileState extends State<SongListTile>
 
   Widget _buildGlassAlbumArt(ThemeData theme) {
     return SizedBox(
-      width: 60,
-      height: 60,
+      width: 48,
+      height: 48,
       child: Stack(
         children: [
           // Base album art container
           GlassContainer(
-            width: 60,
-            height: 60,
+            width: 48,
+            height: 48,
             padding: EdgeInsets.zero,
-            borderRadius: BorderRadius.circular(16),
-      color: widget.song.albumArt == null
-        ? Colors.white.withOpacity(0.1)
-        : null,
+            borderRadius: BorderRadius.circular(12),
+            color: widget.song.albumArt == null
+                ? Colors.white.withOpacity(0.1)
+                : null,
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(12),
               child: widget.song.albumArt != null
                   ? Image.network(
                       widget.song.albumArt!,
-                      width: 60,
-                      height: 60,
+                      width: 48,
+                      height: 48,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return _buildDefaultGlassArtwork();
@@ -255,10 +251,10 @@ class _SongListTileState extends State<SongListTile>
               animation: _waveAnimation,
               builder: (context, child) {
                 return Container(
-                  width: 60,
-                  height: 60,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(12),
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -272,14 +268,14 @@ class _SongListTileState extends State<SongListTile>
                     children: [
                       // Animated waves for playing state
                       if (widget.isPlaying)
-                        ...List.generate(3, (index) {
+                        ...List.generate(2, (index) {
                           return Positioned.fill(
                             child: Container(
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: Colors.white.withOpacity(0.3 * math.sin(_waveAnimation.value + index * 0.5).abs()),
-                                  width: 2,
+                                  width: 1.5,
                                 ),
                               ),
                             ),
@@ -289,8 +285,8 @@ class _SongListTileState extends State<SongListTile>
                       // Play/Pause icon
                       Center(
                         child: Container(
-                          width: 32,
-                          height: 32,
+                          width: 24,
+                          height: 24,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white.withOpacity(0.9),
@@ -298,7 +294,7 @@ class _SongListTileState extends State<SongListTile>
                           child: Icon(
                             widget.isPlaying ? Icons.pause : Icons.play_arrow,
                             color: MusicAppTheme.primaryPurple,
-                            size: 20,
+                            size: 14,
                           ),
                         ),
                       ),
@@ -314,10 +310,10 @@ class _SongListTileState extends State<SongListTile>
 
   Widget _buildRegularAlbumArt(ThemeData theme) {
     return Container(
-      width: 56,
-      height: 56,
+      width: 44,
+      height: 44,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         gradient: widget.song.albumArt == null
             ? LinearGradient(
                 begin: Alignment.topLeft,
@@ -332,27 +328,27 @@ class _SongListTileState extends State<SongListTile>
             ? [
                 BoxShadow(
                   color: theme.primaryColor.withOpacity(0.2),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
                 ),
               ]
             : [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.08),
-                  blurRadius: 4,
+                  blurRadius: 3,
                   offset: const Offset(0, 1),
                 ),
               ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         child: Stack(
           children: [
             if (widget.song.albumArt != null)
               Image.network(
                 widget.song.albumArt!,
-                width: 56,
-                height: 56,
+                width: 44,
+                height: 44,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return _buildDefaultArtwork(theme);
@@ -365,7 +361,7 @@ class _SongListTileState extends State<SongListTile>
               Container(
                 decoration: BoxDecoration(
                   color: theme.primaryColor.withOpacity(0.85),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Center(
                   child: AnimatedSwitcher(
@@ -374,7 +370,7 @@ class _SongListTileState extends State<SongListTile>
                       widget.isPlaying ? Icons.pause : Icons.play_arrow,
                       key: ValueKey(widget.isPlaying),
                       color: Colors.white,
-                      size: 24,
+                      size: 18,
                     ),
                   ),
                 ),
@@ -385,224 +381,189 @@ class _SongListTileState extends State<SongListTile>
     );
   }
 
-  Widget _buildDefaultGlassArtwork() {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withOpacity(0.2),
-            Colors.white.withOpacity(0.1),
-          ],
-        ),
-      ),
-      child: Icon(
-        Icons.music_note_rounded,
-  color: Colors.white.withOpacity(0.8),
-        size: 28,
-      ),
-    );
-  }
+Widget _buildSongInfo(ThemeData theme) {
+  final textColor = widget.useGlass
+      ? Colors.white
+      : theme.colorScheme.onSurface;
+  final secondaryColor = widget.useGlass
+      ? Colors.white.withOpacity(0.8)
+      : theme.colorScheme.onSurface.withOpacity(0.7);
 
-  Widget _buildDefaultArtwork(ThemeData theme) {
-    return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            theme.primaryColor.withOpacity(0.2),
-            theme.primaryColor.withOpacity(0.1),
-          ],
-        ),
-      ),
-      child: Icon(
-        Icons.music_note_rounded,
-  color: theme.primaryColor.withOpacity(0.6),
-        size: 24,
-      ),
-    );
-  }
-
-  Widget _buildSongInfo(ThemeData theme) {
-    final textColor = widget.useGlass
-        ? Colors.white
-        : theme.colorScheme.onSurface;
-    final secondaryColor = widget.useGlass
-  ? Colors.white.withOpacity(0.8)
-  : theme.colorScheme.onSurface.withOpacity(0.7);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Title
-        Text(
-          widget.song.title,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: widget.isCurrentSong
-                ? FontWeight.w600
-                : FontWeight.w500,
-            color: widget.isCurrentSong && widget.useGlass
-                ? Colors.white
-                : (widget.isCurrentSong
-                      ? MusicAppTheme.primaryPurple
-                      : textColor),
-            height: 1.2,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 6),
-
-        // Artist and metadata row
-        Row(
+  return Row(
+    children: [
+      // Song title & artist on the left
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Expanded(
-              child: Text(
-                widget.song.artist,
-                style: TextStyle(
-          color: widget.isCurrentSong && widget.useGlass
-            ? Colors.white.withOpacity(0.9)
-            : (widget.isCurrentSong
-              ? MusicAppTheme.primaryPurple.withOpacity(0.8)
-              : secondaryColor),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+            // Title
+            Text(
+              widget.song.title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: widget.isCurrentSong
+                    ? FontWeight.w600
+                    : FontWeight.w500,
+                color: widget.isCurrentSong && widget.useGlass
+                    ? Colors.white
+                    : (widget.isCurrentSong
+                        ? MusicAppTheme.primaryPurple
+                        : textColor),
+                height: 1.1,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(width: 8),
-            _buildMetadataRow(theme),
-          ],
-        ),
-      ],
-    );
-  }
+            const SizedBox(height: 2),
 
-  Widget _buildMetadataRow(ThemeData theme) {
-    final isGlass = widget.useGlass;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (widget.song.isFavorite) ...[
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-        color: isGlass
-          ? Colors.red.withOpacity(0.2)
-          : Colors.red.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-        border: isGlass
-          ? Border.all(color: Colors.red.withOpacity(0.3), width: 1)
-          : null,
-            ),
-            child: Icon(
-              Icons.favorite,
-              size: 12,
-              color: isGlass ? Colors.red[300] : Colors.red[600],
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
-
-        // Duration
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-          decoration: BoxDecoration(
-      color: isGlass
-        ? Colors.white.withOpacity(0.15)
-        : theme.colorScheme.onSurface.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(10),
-      border: isGlass
-        ? Border.all(color: Colors.white.withOpacity(0.2), width: 1)
-        : null,
-          ),
-          child: Text(
-            widget.song.durationString,
-            style: TextStyle(
-        color: isGlass
-          ? Colors.white.withOpacity(0.9)
-          : theme.colorScheme.onSurface.withOpacity(0.6),
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
-        ),
-
-        if (widget.song.playCount > 0) ...[
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-        color: isGlass
-          ? MusicAppTheme.primaryPurple.withOpacity(0.2)
-          : theme.primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-              border: isGlass
-                  ? Border.all(
-                      color: MusicAppTheme.primaryPurple.withOpacity(0.3),
-                      width: 1,
-                    )
-                  : null,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+            // Artist + metadata (without duration)
+            Row(
               children: [
-                Icon(
-                  Icons.play_circle_outline,
-                  size: 10,
-          color: isGlass
-            ? Colors.white.withOpacity(0.9)
-            : theme.primaryColor,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  widget.song.playCount.toString(),
-                  style: TextStyle(
-          color: isGlass
-            ? Colors.white.withOpacity(0.9)
-            : theme.primaryColor,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Text(
+                    widget.song.artist,
+                    style: TextStyle(
+                      color: widget.isCurrentSong && widget.useGlass
+                          ? Colors.white.withOpacity(0.9)
+                          : (widget.isCurrentSong
+                              ? MusicAppTheme.primaryPurple.withOpacity(0.8)
+                              : secondaryColor),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                const SizedBox(width: 8),
+                _buildMetadataRow(theme), // now only fav + play count
               ],
             ),
+          ],
+        ),
+      ),
+
+      const SizedBox(width: 8),
+
+      // Duration on the far right
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: widget.useGlass
+              ? Colors.white.withOpacity(0.15)
+              : theme.colorScheme.onSurface.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(8),
+          border: widget.useGlass
+              ? Border.all(color: Colors.white.withOpacity(0.2), width: 0.8)
+              : null,
+        ),
+        child: Text(
+          widget.song.durationString,
+          style: TextStyle(
+            color: widget.useGlass
+                ? Colors.white.withOpacity(0.9)
+                : theme.colorScheme.onSurface.withOpacity(0.6),
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
-        ],
+        ),
+      ),
+    ],
+  );
+}
+
+Widget _buildMetadataRow(ThemeData theme) {
+  final isGlass = widget.useGlass;
+
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      if (widget.song.isFavorite) ...[
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: isGlass
+                ? Colors.red.withOpacity(0.2)
+                : Colors.red.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: isGlass
+                ? Border.all(color: Colors.red.withOpacity(0.3), width: 0.8)
+                : null,
+          ),
+          child: Icon(
+            Icons.favorite,
+            size: 10,
+            color: isGlass ? Colors.red[300] : Colors.red[600],
+          ),
+        ),
+        const SizedBox(width: 4),
       ],
-    );
-  }
+
+      if (widget.song.playCount > 0) ...[
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: isGlass
+                ? MusicAppTheme.primaryPurple.withOpacity(0.2)
+                : theme.primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: isGlass
+                ? Border.all(
+                    color: MusicAppTheme.primaryPurple.withOpacity(0.3),
+                    width: 0.8,
+                  )
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.play_arrow,
+                size: 10,
+                color: isGlass
+                    ? Colors.white.withOpacity(0.9)
+                    : theme.primaryColor,
+              ),
+              const SizedBox(width: 2),
+              Text(
+                widget.song.playCount.toString(),
+                style: TextStyle(
+                  color: isGlass
+                      ? Colors.white.withOpacity(0.9)
+                      : theme.primaryColor,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ],
+  );
+}
+
 
   Widget _buildGlassTrailingActions(ThemeData theme) {
     if (widget.isCurrentSong && widget.isPlaying) {
       return SizedBox(
-        width: 44,
-        height: 44,
+        width: 36,
+        height: 36,
         child: Stack(
           children: [
             GlassContainer(
-              width: 44,
-              height: 44,
-              borderRadius: BorderRadius.circular(22),
+              width: 36,
+              height: 36,
+              borderRadius: BorderRadius.circular(18),
               color: Colors.white.withOpacity(0.1),
               child: Center(
                 child: SizedBox(
-                  width: 24,
-                  height: 24,
+                  width: 18,
+                  height: 18,
                   child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
+                    strokeWidth: 2.0,
                     valueColor: const AlwaysStoppedAnimation<Color>(
                       Colors.white,
                     ),
@@ -615,35 +576,24 @@ class _SongListTileState extends State<SongListTile>
       );
     }
 
-    return GlassButton(
-      onPressed: widget.onMorePressed,
-      width: 44,
-      height: 44,
-      borderRadius: BorderRadius.circular(22),
-  color: Colors.white.withOpacity(0.1),
-      child: Icon(
-        Icons.more_vert_rounded,
-        size: 20,
-  color: Colors.white.withOpacity(0.8),
-      ),
-    );
+    return const SizedBox(width: 36, height: 36);
   }
 
   Widget _buildRegularTrailingActions(ThemeData theme) {
     if (widget.isCurrentSong && widget.isPlaying) {
       return Container(
-        width: 40,
-        height: 40,
+        width: 36,
+        height: 36,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: theme.primaryColor.withOpacity(0.1),
         ),
         child: Center(
           child: SizedBox(
-            width: 20,
-            height: 20,
+            width: 18,
+            height: 18,
             child: CircularProgressIndicator(
-              strokeWidth: 2.5,
+              strokeWidth: 2.0,
               valueColor: AlwaysStoppedAnimation<Color>(theme.primaryColor),
             ),
           ),
@@ -651,24 +601,49 @@ class _SongListTileState extends State<SongListTile>
       );
     }
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: widget.onMorePressed,
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          width: 40,
-          height: 40,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.transparent,
-          ),
-          child: Icon(
-            Icons.more_vert_rounded,
-            size: 20,
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
-          ),
+    return const SizedBox(width: 36, height: 36);
+  }
+
+  Widget _buildDefaultGlassArtwork() {
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withOpacity(0.2),
+            Colors.white.withOpacity(0.1),
+          ],
         ),
+      ),
+      child: Icon(
+        Icons.music_note_rounded,
+        color: Colors.white.withOpacity(0.8),
+        size: 20,
+      ),
+    );
+  }
+
+  Widget _buildDefaultArtwork(ThemeData theme) {
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            theme.primaryColor.withOpacity(0.2),
+            theme.primaryColor.withOpacity(0.1),
+          ],
+        ),
+      ),
+      child: Icon(
+        Icons.music_note_rounded,
+        color: theme.primaryColor.withOpacity(0.6),
+        size: 18,
       ),
     );
   }

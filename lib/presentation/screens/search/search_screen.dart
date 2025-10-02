@@ -62,55 +62,75 @@ class _SearchScreenState extends State<SearchScreen> {
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: GlassAppBar(
-          title: null,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Enhanced Header with Search
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Search',
+                            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 32,
+                            ),
+                          ),
+                        ),
+                        if (_searchController.text.isNotEmpty)
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withValues(alpha: 0.15),
+                            ),
+                            child: IconButton(
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {
+                                  _searchResults = [];
+                                  _isSearching = false;
+                                  _searchQuery = '';
+                                });
+                              },
+                              icon: const Icon(Icons.clear, color: Colors.white),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    // Enhanced Search Input
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        inputDecorationTheme: const InputDecorationTheme(
+                          hintStyle: TextStyle(color: Colors.white70),
+                        ),
+                        textTheme: Theme.of(context).textTheme.copyWith(
+                          bodyLarge: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      child: GlassTextField(
+                        controller: _searchController,
+                        hintText: 'Search songs, artists, albums...',
+                        prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Body Content
+              Expanded(child: _buildBody()),
+            ],
           ),
-          actions: [
-            if (_searchController.text.isNotEmpty)
-              IconButton(
-                onPressed: () {
-                  _searchController.clear();
-                  setState(() {
-                    _searchResults = [];
-                    _isSearching = false;
-                    _searchQuery = '';
-                  });
-                },
-                icon: const Icon(Icons.clear, color: Colors.white),
-              ),
-          ],
-        ),
-        body: Column(
-          children: [
-            // Search Input
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Theme(
-                data: Theme.of(context).copyWith(
-                  inputDecorationTheme: const InputDecorationTheme(
-                    hintStyle: TextStyle(color: Colors.white70),
-                  ),
-                  textTheme: Theme.of(context).textTheme.copyWith(
-                    bodyLarge: const TextStyle(color: Colors.white),
-                  ),
-                ),
-                child: GlassTextField(
-                  controller: _searchController,
-                  hintText: 'Search songs, artists, albums...',
-                  prefixIcon: const Icon(Icons.search, color: Colors.white70),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
-                  ),
-                ),
-              ),
-            ),
-            // Body Content
-            Expanded(child: _buildBody()),
-          ],
         ),
       ),
     );
@@ -132,27 +152,15 @@ class _SearchScreenState extends State<SearchScreen> {
     return Consumer<MusicLibraryProvider>(
       builder: (context, libraryProvider, child) {
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionTitle('Recent Searches'),
-              const SizedBox(height: 16),
-              GlassContainer(
-                padding: const EdgeInsets.all(20),
-                child: const Center(
-                  child: Text(
-                    'No recent searches',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
               _buildSectionTitle('Browse by Genre'),
               const SizedBox(height: 16),
               _buildGenreGrid(libraryProvider),
               const SizedBox(height: 32),
-              _buildSectionTitle('Quick Search'),
+              _buildSectionTitle('Popular Genres'),
               const SizedBox(height: 16),
               _buildQuickSearchOptions(),
             ],
@@ -163,14 +171,12 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
+    return Text(
+      title,
+      style: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+        fontSize: 20,
       ),
     );
   }
@@ -184,11 +190,24 @@ class _SearchScreenState extends State<SearchScreen> {
 
     if (genres.isEmpty) {
       return GlassContainer(
-        padding: const EdgeInsets.all(20),
-        child: const Center(
-          child: Text(
-            'No genres available',
-            style: TextStyle(color: Colors.white70),
+        padding: const EdgeInsets.all(32),
+        child: Center(
+          child: Column(
+            children: [
+              Icon(
+                Icons.music_note_outlined,
+                size: 48,
+                color: Colors.white.withValues(alpha: 0.5),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'No genres available',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 16,
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -199,13 +218,15 @@ class _SearchScreenState extends State<SearchScreen> {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 3,
+        childAspectRatio: 2.5,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
-      itemCount: genres.length,
+      itemCount: genres.length > 6 ? 6 : genres.length,
       itemBuilder: (context, index) {
         final genre = genres[index];
+        final colors = _getGenreGradient(index);
+        
         return GlassContainer(
           padding: EdgeInsets.zero,
           child: Material(
@@ -221,23 +242,31 @@ class _SearchScreenState extends State<SearchScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   gradient: LinearGradient(
-                      colors: [
-                        Colors.white.withValues(alpha: 0.1),
-                        Colors.white.withValues(alpha: 0.05),
-                    ],
+                    colors: colors,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
                 ),
-                child: Center(
-                  child: Text(
-                    genre,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        genre,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 15,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.white.withValues(alpha: 0.7),
+                      size: 16,
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -247,53 +276,75 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  List<Color> _getGenreGradient(int index) {
+    final gradients = [
+      [Colors.purple.withValues(alpha: 0.3), Colors.purple.withValues(alpha: 0.1)],
+      [Colors.blue.withValues(alpha: 0.3), Colors.blue.withValues(alpha: 0.1)],
+      [Colors.pink.withValues(alpha: 0.3), Colors.pink.withValues(alpha: 0.1)],
+      [Colors.teal.withValues(alpha: 0.3), Colors.teal.withValues(alpha: 0.1)],
+      [Colors.orange.withValues(alpha: 0.3), Colors.orange.withValues(alpha: 0.1)],
+      [Colors.indigo.withValues(alpha: 0.3), Colors.indigo.withValues(alpha: 0.1)],
+    ];
+    return gradients[index % gradients.length];
+  }
+
   Widget _buildQuickSearchOptions() {
     final quickSearches = [
-      'Rock',
-      'Pop',
-      'Hip Hop',
-      'Jazz',
-      'Classical',
-      'Electronic',
-      'Country',
-      'R&B',
+      {'name': 'Rock', 'icon': Icons.music_note},
+      {'name': 'Pop', 'icon': Icons.star},
+      {'name': 'Hip Hop', 'icon': Icons.album},
+      {'name': 'Jazz', 'icon': Icons.piano},
+      {'name': 'Classical', 'icon': Icons.library_music},
+      {'name': 'Electronic', 'icon': Icons.electrical_services},
     ];
 
     return Wrap(
       spacing: 12,
       runSpacing: 12,
-      children: quickSearches.map((search) {
+      children: quickSearches.map((item) {
         return GlassContainer(
           padding: EdgeInsets.zero,
-          borderRadius: BorderRadius.circular(25),
+          borderRadius: BorderRadius.circular(20),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              borderRadius: BorderRadius.circular(25),
+              borderRadius: BorderRadius.circular(20),
               onTap: () {
-                _searchController.text = search;
+                _searchController.text = item['name'] as String;
                 _onSearchChanged();
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
+                  horizontal: 16,
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(25),
+                  borderRadius: BorderRadius.circular(20),
                   gradient: LinearGradient(
-                      colors: [
-                        Colors.white.withValues(alpha: 0.15),
-                        Colors.white.withValues(alpha: 0.05),
+                    colors: [
+                      Colors.white.withValues(alpha: 0.15),
+                      Colors.white.withValues(alpha: 0.05),
                     ],
                   ),
                 ),
-                child: Text(
-                  search,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      item['icon'] as IconData,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      item['name'] as String,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -305,37 +356,53 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildNoResultsView() {
     return Center(
-      child: GlassContainer(
+      child: Padding(
         padding: const EdgeInsets.all(40),
-        margin: const EdgeInsets.all(32),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                 color: Colors.white.withValues(alpha: 0.1),
+                gradient: RadialGradient(
+                  colors: [
+                    Colors.white.withValues(alpha: 0.15),
+                    Colors.white.withValues(alpha: 0.05),
+                  ],
+                ),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.search_off,
-                size: 48,
-                color: Colors.white70,
+                size: 64,
+                color: Colors.white.withValues(alpha: 0.7),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             Text(
-              'No results found for "$_searchQuery"',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              'No results found',
+              style: const TextStyle(
                 color: Colors.white,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.bold,
+                fontSize: 24,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Try searching for "$_searchQuery"',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.7),
+                fontSize: 16,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 12),
-            const Text(
-              'Try searching with different keywords',
-              style: TextStyle(color: Colors.white70),
+            const SizedBox(height: 8),
+            Text(
+              'with different keywords',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 14,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -349,146 +416,274 @@ class _SearchScreenState extends State<SearchScreen> {
       builder: (context, audioProvider, child) {
         return Column(
           children: [
-            // Search results header
-            GlassContainer(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              padding: const EdgeInsets.all(16),
+            // Enhanced Search results header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
               child: Row(
                 children: [
-                  Text(
-                    '${_searchResults.length} result${_searchResults.length == 1 ? '' : 's'}',
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${_searchResults.length} ${_searchResults.length == 1 ? 'song' : 'songs'} found',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'for "$_searchQuery"',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.6),
+                            fontSize: 14,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
-                  const Spacer(),
                   if (_searchResults.isNotEmpty) ...[
-                    GlassButton(
-                      onPressed: () async {
-                        await audioProvider.playPlaylist(_searchResults);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const NowPlayingScreen(),
+                    GlassContainer(
+                      padding: EdgeInsets.zero,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () async {
+                            await audioProvider.playPlaylist(_searchResults);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const NowPlayingScreen(),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white.withValues(alpha: 0.2),
+                                  Colors.white.withValues(alpha: 0.1),
+                                ],
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.play_arrow,
+                              color: Colors.white,
+                              size: 24,
+                            ),
                           ),
-                        );
-                      },
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.play_arrow, size: 18, color: Colors.white),
-                          SizedBox(width: 4),
-                          Text(
-                            'Play All',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    GlassButton(
-                      onPressed: () async {
-                        final shuffled = List<Song>.from(_searchResults);
-                        shuffled.shuffle();
-                        await audioProvider.playPlaylist(shuffled);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const NowPlayingScreen(),
+                    const SizedBox(width: 12),
+                    GlassContainer(
+                      padding: EdgeInsets.zero,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () async {
+                            final shuffled = List<Song>.from(_searchResults);
+                            shuffled.shuffle();
+                            await audioProvider.playPlaylist(shuffled);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const NowPlayingScreen(),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white.withValues(alpha: 0.2),
+                                  Colors.white.withValues(alpha: 0.1),
+                                ],
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.shuffle,
+                              color: Colors.white,
+                              size: 24,
+                            ),
                           ),
-                        );
-                      },
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.shuffle, size: 18, color: Colors.white),
-                          SizedBox(width: 4),
-                          Text(
-                            'Shuffle',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ],
                 ],
               ),
             ),
-            // Search results list
+            // Search results list with enhanced styling
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 itemCount: _searchResults.length,
                 itemBuilder: (context, index) {
                   final song = _searchResults[index];
-                  final isCurrentSong =
-                      audioProvider.currentSong?.id == song.id;
+                  final isCurrentSong = audioProvider.currentSong?.id == song.id;
 
-                  return GlassMusicCard(
-                    leading: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.white.withAlpha((0.1 * 255).toInt()),
-                      ),
-                      child: song.albumArt != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                song.albumArt!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(
-                                    Icons.music_note,
-                                    color: Colors.white70,
-                                    size: 24,
-                                  );
-                                },
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: GlassContainer(
+                      padding: EdgeInsets.zero,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () async {
+                            await audioProvider.playPlaylist(
+                              _searchResults,
+                              startIndex: index,
+                            );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const NowPlayingScreen(),
                               ),
-                            )
-                          : const Icon(
-                              Icons.music_note,
-                              color: Colors.white70,
-                              size: 24,
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              gradient: isCurrentSong
+                                  ? LinearGradient(
+                                      colors: [
+                                        Colors.white.withValues(alpha: 0.2),
+                                        Colors.white.withValues(alpha: 0.1),
+                                      ],
+                                    )
+                                  : null,
                             ),
-                    ),
-                    title: song.title,
-                    subtitle: '${song.artist} • ${song.album}',
-                    trailing: GestureDetector(
-                      onTap: () => _showSongOptions(context, song),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                           color: Colors.white.withValues(alpha: 0.1),
-                        ),
-                        child: const Icon(
-                          Icons.more_vert,
-                          color: Colors.white70,
-                          size: 20,
+                            child: Row(
+                              children: [
+                                // Album Art
+                                Container(
+                                  width: 56,
+                                  height: 56,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.3),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: song.albumArt != null
+                                        ? Image.network(
+                                            song.albumArt!,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) {
+                                              return Container(
+                                                color: Colors.white.withValues(alpha: 0.1),
+                                                child: const Icon(
+                                                  Icons.music_note,
+                                                  color: Colors.white70,
+                                                  size: 28,
+                                                ),
+                                              );
+                                            },
+                                          )
+                                        : Container(
+                                            color: Colors.white.withValues(alpha: 0.1),
+                                            child: const Icon(
+                                              Icons.music_note,
+                                              color: Colors.white70,
+                                              size: 28,
+                                            ),
+                                          ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                // Song Info
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        song.title,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: isCurrentSong
+                                              ? FontWeight.bold
+                                              : FontWeight.w600,
+                                          fontSize: 16,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${song.artist} • ${song.album}',
+                                        style: TextStyle(
+                                          color: Colors.white.withValues(alpha: 0.7),
+                                          fontSize: 14,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                // Playing indicator or more options
+                                if (isCurrentSong && audioProvider.isPlaying)
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.white.withValues(alpha: 0.3),
+                                          Colors.white.withValues(alpha: 0.1),
+                                        ],
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.equalizer,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  )
+                                else
+                                  GestureDetector(
+                                    onTap: () => _showSongOptions(context, song),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white.withValues(alpha: 0.1),
+                                      ),
+                                      child: Icon(
+                                        Icons.more_vert,
+                                        color: Colors.white.withValues(alpha: 0.7),
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                    onTap: () async {
-                      await audioProvider.playPlaylist(
-                        _searchResults,
-                        startIndex: index,
-                      );
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const NowPlayingScreen(),
-                        ),
-                      );
-                    },
-                    isPlaying: isCurrentSong && audioProvider.isPlaying,
                   );
                 },
               ),
@@ -503,126 +698,198 @@ class _SearchScreenState extends State<SearchScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) => GlassContainer(
         margin: const EdgeInsets.all(16),
-        borderRadius: BorderRadius.circular(24),
-        padding: const EdgeInsets.all(16),
+        borderRadius: BorderRadius.circular(28),
+        padding: const EdgeInsets.symmetric(vertical: 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Song Info Header
-            GlassMusicCard(
-              leading: Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: Colors.white.withAlpha((0.1 * 255).toInt()),
-                ),
-                child: song.albumArt != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          song.albumArt!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(
-                              Icons.music_note,
-                              color: Colors.white70,
-                              size: 24,
-                            );
-                          },
+            // Song Info Header with enhanced styling
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
                         ),
-                      )
-                    : const Icon(
-                        Icons.music_note,
-                        color: Colors.white70,
-                        size: 24,
-                      ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: song.albumArt != null
+                          ? Image.network(
+                              song.albumArt!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  child: const Icon(
+                                    Icons.music_note,
+                                    color: Colors.white70,
+                                    size: 32,
+                                  ),
+                                );
+                              },
+                            )
+                          : Container(
+                              color: Colors.white.withValues(alpha: 0.1),
+                              child: const Icon(
+                                Icons.music_note,
+                                color: Colors.white70,
+                                size: 32,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          song.title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          song.artist,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: 14,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              title: song.title,
-              subtitle: '${song.artist} • ${song.album}',
-              height: 70,
-              padding: const EdgeInsets.all(16),
             ),
 
             Container(
               height: 1,
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              color: Colors.white.withAlpha((0.1 * 255).toInt()),
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white.withValues(alpha: 0),
+                    Colors.white.withValues(alpha: 0.1),
+                    Colors.white.withValues(alpha: 0),
+                  ],
+                ),
+              ),
             ),
 
-            // Action Items
+            // Action Items with icons
             ...[
-                  {
-                    'icon': Icons.play_arrow,
-                    'title': 'Play',
-                    'action': () {
-                      Navigator.pop(context);
-                      context.read<AudioPlayerProvider>().playSong(song);
-                    },
-                  },
-                  {
-                    'icon': Icons.queue,
-                    'title': 'Add to Queue',
-                    'action': () {
-                      Navigator.pop(context);
-                      context.read<AudioPlayerProvider>().addToQueue(song);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Added to queue'),
-                          backgroundColor: Colors.black.withAlpha((0.8 * 255).toInt()),
-                        ),
-                      );
-                    },
-                  },
-                  {
-                    'icon': Icons.playlist_add,
-                    'title': 'Add to Playlist',
-                    'action': () {
-                      Navigator.pop(context);
-                      // Show playlist selection
-                    },
-                  },
-                  {
-                    'icon': Icons.album,
-                    'title': 'Go to Album',
-                    'action': () {
-                      Navigator.pop(context);
-                      _searchController.text = song.album;
-                      _onSearchChanged();
-                    },
-                  },
-                  {
-                    'icon': Icons.person,
-                    'title': 'Go to Artist',
-                    'action': () {
-                      Navigator.pop(context);
-                      _searchController.text = song.artist;
-                      _onSearchChanged();
-                    },
-                  },
-                ]
-                .map(
-                  (item) => GlassMusicCard(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withAlpha((0.1 * 255).toInt()),
+              {
+                'icon': Icons.play_circle_filled,
+                'title': 'Play Now',
+                'action': () {
+                  Navigator.pop(context);
+                  context.read<AudioPlayerProvider>().playSong(song);
+                },
+              },
+              {
+                'icon': Icons.queue_music,
+                'title': 'Add to Queue',
+                'action': () {
+                  Navigator.pop(context);
+                  context.read<AudioPlayerProvider>().addToQueue(song);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Added to queue'),
+                      backgroundColor: Colors.black.withValues(alpha: 0.9),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
-                        item['icon'] as IconData,
-                        color: Colors.white,
-                      ),
                     ),
-                    title: item['title'] as String,
-                    onTap: item['action'] as VoidCallback,
-                    height: 60,
-                    padding: const EdgeInsets.all(12),
+                  );
+                },
+              },
+              {
+                'icon': Icons.playlist_add,
+                'title': 'Add to Playlist',
+                'action': () {
+                  Navigator.pop(context);
+                  // Show playlist selection
+                },
+              },
+              {
+                'icon': Icons.album_outlined,
+                'title': 'View Album',
+                'action': () {
+                  Navigator.pop(context);
+                  _searchController.text = song.album;
+                  _onSearchChanged();
+                },
+              },
+              {
+                'icon': Icons.person_outline,
+                'title': 'View Artist',
+                'action': () {
+                  Navigator.pop(context);
+                  _searchController.text = song.artist;
+                  _onSearchChanged();
+                },
+              },
+            ].map(
+              (item) => Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: item['action'] as VoidCallback,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 14,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            item['icon'] as IconData,
+                            color: Colors.white,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Text(
+                          item['title'] as String,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                )
-                ,
+                ),
+              ),
+            ),
           ],
         ),
       ),

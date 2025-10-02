@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:music_app/presentation/screens/home/widgets/song_list_tile.dart';
+import 'package:music_app/presentation/screens/now_playing/now_playing_screen.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_library_provider.dart';
 import '../../providers/audio_player_provider.dart';
@@ -15,43 +16,9 @@ class SongsTab extends StatelessWidget {
 
         return Column(
           children: [
-            // Quick actions
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: songs.isNotEmpty
-                          ? () {
-                              audioProvider.playPlaylist(songs);
-                            }
-                          : null,
-                      icon: const Icon(Icons.play_arrow),
-                      label: const Text('Play All'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: songs.isNotEmpty
-                          ? () {
-                              final shuffledSongs = List<dynamic>.from(songs);
-                              shuffledSongs.shuffle();
-                              audioProvider.playPlaylist(shuffledSongs.cast());
-                            }
-                          : null,
-                      icon: const Icon(Icons.shuffle),
-                      label: const Text('Shuffle'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
             // Songs count
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
                   Text(
@@ -61,8 +28,6 @@ class SongsTab extends StatelessWidget {
                 ],
               ),
             ),
-
-            const SizedBox(height: 8),
 
             // Songs list
             Expanded(
@@ -78,7 +43,16 @@ class SongsTab extends StatelessWidget {
                     isCurrentSong: isCurrentSong,
                     isPlaying: isCurrentSong && audioProvider.isPlaying,
                     onTap: () {
+                      // Play the song first
                       audioProvider.playPlaylist(songs, startIndex: index);
+                      
+                      // Then navigate to Now Playing screen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NowPlayingScreen(),
+                        ),
+                      );
                     },
                     onMorePressed: () {
                       _showSongOptions(context, song);
