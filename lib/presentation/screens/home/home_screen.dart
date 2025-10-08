@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:music_app/app/glassmorphism_widgets.dart';
 import 'package:music_app/app/theme.dart';
 import 'package:music_app/core/widgets/mini_player.dart';
-import 'package:music_app/presentation/screens/ytmusic_search_screen.dart';
+import 'package:music_app/presentation/screens/youtube/ytmusic_search_screen.dart';
 import 'dart:math' as math;
 import 'package:provider/provider.dart';
 import '../../providers/audio_player_provider.dart';

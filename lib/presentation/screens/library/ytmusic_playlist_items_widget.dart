@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:music_app/presentation/screens/youtube/ytmusic_video_screen.dart';
 import 'package:provider/provider.dart';
 import '../../../data/models/ytmusic_favorite.dart';
 import '../../providers/ytmusic_playlist_items_provider.dart';
-import '../ytmusic_video_screen.dart';
 
 class YTMusicPlaylistItemsWidget extends StatelessWidget {
   final String playlistId;

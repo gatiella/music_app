@@ -1,33 +1,59 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.gatiella.music_app">
      
-    <!-- Core permissions -->
+    <!-- ==================== NETWORK PERMISSIONS ==================== -->
+    <!-- Essential for YouTube Music, streaming, and downloads -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    
+    <!-- ==================== AUDIO & MEDIA PERMISSIONS ==================== -->
+    <!-- Core audio playback and media control -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-     
-    <!-- Storage permissions (for older devices) -->
+    
+    <!-- ==================== STORAGE PERMISSIONS ==================== -->
+    <!-- Storage permissions (for older devices - Android 10 and below) -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="29"/>
      
-    <!-- Scoped storage (Android 11+) -->
+    <!-- Scoped storage (Android 11+) - For managing downloaded music -->
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
      
-    <!-- Android 13+ granular media access -->
+    <!-- Android 13+ granular media access - Required for audio files -->
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-     
-    <!-- Notifications (Android 13+) -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    
+    <!-- ==================== NOTIFICATION PERMISSIONS ==================== -->
+    <!-- Notifications (Android 13+) - For playback controls and download notifications -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-     
-    <!-- Optional: Add microphone permission if you want to record audio -->
+    
+    <!-- ==================== DOWNLOAD PERMISSIONS ==================== -->
+    <!-- For downloading music files -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    
+    <!-- ==================== BLUETOOTH PERMISSIONS (Optional) ==================== -->
+    <!-- For Bluetooth headphones/speakers control -->
+    <uses-permission android:name="android.permission.BLUETOOTH" 
+        android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    
+    <!-- ==================== SYSTEM PERMISSIONS ==================== -->
+    <!-- Prevent screen timeout during playback -->
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    
+    <!-- Optional: Add microphone permission if you want to record audio or add voice features -->
     <!-- <uses-permission android:name="android.permission.RECORD_AUDIO" /> -->
      
     <application
-        android:label="music_app"
+        android:label="Music App"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true"
+        android:requestLegacyExternalStorage="true">
                  
         <activity
             android:name="com.ryanheise.audioservice.AudioServiceActivity"
@@ -37,7 +63,8 @@
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="portrait">
              
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
@@ -47,9 +74,19 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            
+            <!-- Handle music file opening from other apps -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:mimeType="audio/*" />
+            </intent-filter>
         </activity>
          
-        <!-- Audio Service -->
+        <!-- ==================== AUDIO SERVICE ==================== -->
         <service
             android:name="com.ryanheise.audioservice.AudioService"
             android:foregroundServiceType="mediaPlayback"
@@ -59,7 +96,8 @@
             </intent-filter>
         </service>
         
-        <!-- Required receiver for media buttons -->
+        <!-- ==================== MEDIA BUTTON RECEIVER ==================== -->
+        <!-- Required receiver for media buttons (headphone controls, etc.) -->
         <receiver 
             android:name="com.ryanheise.audioservice.MediaButtonReceiver"
             android:exported="true">
@@ -67,18 +105,49 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </receiver>
+        
+        <!-- ==================== DOWNLOAD RECEIVER (Optional) ==================== -->
+        <!-- Handles download completion notifications -->
+        <receiver 
+            android:name="android.app.DownloadReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
+            </intent-filter>
+        </receiver>
          
+        <!-- ==================== FLUTTER METADATA ==================== -->
         <!-- Required by Flutter engine -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
      
-    <!-- For ProcessTextPlugin (don't remove) -->
+    <!-- ==================== QUERIES ==================== -->
+    <!-- For ProcessTextPlugin and other intent queries -->
     <queries>
+        <!-- Text processing -->
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        
+        <!-- Browser for opening YouTube links -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        
+        <!-- Audio file handling -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="audio/*" />
+        </intent>
+        
+        <!-- Share functionality -->
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="*/*" />
         </intent>
     </queries>
 </manifest>

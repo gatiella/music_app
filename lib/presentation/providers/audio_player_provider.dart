@@ -6,36 +6,6 @@ import 'package:music_app/core/services/audio_service.dart';
 import 'package:music_app/data/models/song.dart';
 
 class AudioPlayerProvider extends ChangeNotifier {
-
-  // Play a queue of DownloadedSong objects
-  Future<void> playDownloadedQueue(List<DownloadedSong> songs, {int startIndex = 0}) async {
-    final mediaItems = songs.map((s) => s.toMediaItem()).toList();
-    await _audioHandler.setDownloadedQueue(mediaItems, initialIndex: startIndex);
-    notifyListeners();
-    await play();
-  }
-
-  // Toggle shuffle for downloaded queue
-  Future<void> toggleShuffleDownloaded() async {
-    _shuffleMode = !_shuffleMode;
-    await _audioHandler.setShuffleMode(
-      _shuffleMode ? AudioServiceShuffleMode.all : AudioServiceShuffleMode.none,
-    );
-    notifyListeners();
-  }
-
-  // Set repeat/loop mode for downloaded queue
-  Future<void> setDownloadedLoopMode(LoopMode loopMode) async {
-    _loopMode = loopMode;
-    await _audioHandler.setLoopMode(loopMode);
-    notifyListeners();
-  }
-
-  /// Play a custom audio URL (e.g., from YouTube Music)
-  Future<void> playCustomUrl(String url, {String? title, String? artist, String? artUri}) async {
-    await _audioHandler.playCustomUrl(url, title: title, artist: artist, artUri: artUri);
-    notifyListeners();
-  }
   final AudioPlayerService _audioHandler;
 
   List<Song> _queue = [];
@@ -71,41 +41,74 @@ class AudioPlayerProvider extends ChangeNotifier {
       notifyListeners();
     });
 
-    // Listen to current index changes
-    _audioHandler.currentIndexStream.listen((index) async {
-      final queue = await _audioHandler
-          .queue
-          .first; // Fixed: Added .first to get Future value
-      if (index != null && index < queue.length) {
+    // Listen to current index changes - FIXED: Only update index, not the queue
+    _audioHandler.currentIndexStream.listen((index) {
+      if (index != null && index >= 0 && index < _queue.length) {
         _currentIndex = index;
-        // Fixed: Convert MediaItem to Song - this needs proper implementation based on your Song model
-        _queue = queue
-            .map((mediaItem) => Song.fromMediaItem(mediaItem))
-            .toList();
+        debugPrint('Current index changed to: $index, Song: ${currentSong?.title}');
         notifyListeners();
       }
     });
 
-    // Sync initial state - Fixed: Handle Future properly
+    // Listen to queue changes separately
+    _audioHandler.queue.listen((queue) {
+      if (queue.isNotEmpty) {
+        _queue = queue.map((mediaItem) => Song.fromMediaItem(mediaItem)).toList();
+        debugPrint('Queue updated: ${_queue.length} songs');
+        notifyListeners();
+      }
+    });
+
+    // Sync initial state
     _initializeState();
   }
 
   Future<void> _initializeState() async {
     try {
       final queue = await _audioHandler.queue.first;
-      _queue = queue.map((mediaItem) => Song.fromMediaItem(mediaItem)).toList();
+      if (queue.isNotEmpty) {
+        _queue = queue.map((mediaItem) => Song.fromMediaItem(mediaItem)).toList();
+      }
       _currentIndex = await _audioHandler.currentIndexStream.first ?? 0;
-      // Note: These properties might need to be accessed differently based on your AudioPlayerService implementation
-      // _loopMode = _audioHandler.loopMode;
-      // _shuffleMode = _audioHandler.shuffleMode;
+      debugPrint('Initial state: ${_queue.length} songs, index: $_currentIndex');
     } catch (e) {
       debugPrint('Error initializing state: $e');
     }
   }
 
+  // Play a queue of DownloadedSong objects
+  Future<void> playDownloadedQueue(List<DownloadedSong> songs, {int startIndex = 0}) async {
+    final mediaItems = songs.map((s) => s.toMediaItem()).toList();
+    await _audioHandler.setDownloadedQueue(mediaItems, initialIndex: startIndex);
+    notifyListeners();
+    await play();
+  }
+
+  // Toggle shuffle for downloaded queue
+  Future<void> toggleShuffleDownloaded() async {
+    _shuffleMode = !_shuffleMode;
+    await _audioHandler.setShuffleMode(
+      _shuffleMode ? AudioServiceShuffleMode.all : AudioServiceShuffleMode.none,
+    );
+    notifyListeners();
+  }
+
+  // Set repeat/loop mode for downloaded queue
+  Future<void> setDownloadedLoopMode(LoopMode loopMode) async {
+    _loopMode = loopMode;
+    await _audioHandler.setLoopMode(loopMode);
+    notifyListeners();
+  }
+
+  /// Play a custom audio URL (e.g., from YouTube Music)
+  Future<void> playCustomUrl(String url, {String? title, String? artist, String? artUri}) async {
+    await _audioHandler.playCustomUrl(url, title: title, artist: artist, artUri: artUri);
+    notifyListeners();
+  }
+
   // Getters
   List<Song> get queue => List.unmodifiable(_queue);
-  Song? get currentSong => _queue.isNotEmpty && _currentIndex < _queue.length
+  Song? get currentSong => _queue.isNotEmpty && _currentIndex >= 0 && _currentIndex < _queue.length
       ? _queue[_currentIndex]
       : null;
   int get currentIndex => _currentIndex;
@@ -165,18 +168,21 @@ class AudioPlayerProvider extends ChangeNotifier {
   Future<void> seekToNext() async {
     if (hasNext) {
       await _audioHandler.skipToNext();
+      // The index will be updated via the currentIndexStream listener
     }
   }
 
   Future<void> seekToPrevious() async {
     if (hasPrevious) {
       await _audioHandler.skipToPrevious();
+      // The index will be updated via the currentIndexStream listener
     }
   }
 
   Future<void> skipToIndex(int index) async {
     if (index >= 0 && index < _queue.length) {
       await _audioHandler.skipToQueueItem(index);
+      // The index will be updated via the currentIndexStream listener
     }
   }
 
@@ -195,6 +201,7 @@ class AudioPlayerProvider extends ChangeNotifier {
     await _audioHandler.setQueue(songs, initialIndex: initialIndex);
     _queue = List.from(songs);
     _currentIndex = initialIndex.clamp(0, songs.length - 1);
+    debugPrint('Queue set: ${_queue.length} songs, starting at index: $_currentIndex');
     notifyListeners();
   }
 
@@ -242,7 +249,6 @@ class AudioPlayerProvider extends ChangeNotifier {
 
   Future<void> setShuffleMode(bool enabled) async {
     _shuffleMode = enabled;
-    // Fixed: Properly convert bool to AudioServiceShuffleMode
     final shuffleMode = enabled
         ? AudioServiceShuffleMode.all
         : AudioServiceShuffleMode.none;

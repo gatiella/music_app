@@ -1,68 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
+/// Simple auth provider that doesn't require Google Sign-In
+/// You can still use YouTube Music search and playback without authentication
 class YTMusicAuthProvider extends ChangeNotifier {
-  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  bool _isSignedIn = false;
+  String? _userName;
+  String? _userEmail;
 
-  GoogleSignInAccount? _user;
-  bool _isSigningIn = false;
-  bool _initialized = false;
+  bool get isSignedIn => _isSignedIn;
+  bool get isSigningIn => false;
+  bool get isAvailable => true; // Always available in simple mode
+  String? get userName => _userName;
+  String? get userEmail => _userEmail;
 
-  GoogleSignInAccount? get user => _user;
-  bool get isSignedIn => _user != null;
-  bool get isSigningIn => _isSigningIn;
-
-  Future<void> _ensureInitialized() async {
-    if (!_initialized) {
-      await _googleSignIn.initialize(
-        // optionally pass clientId / serverClientId
-        // clientId: 'YOUR_CLIENT_ID',
-        // serverClientId: 'YOUR_SERVER_CLIENT_ID',
-      );
-      _initialized = true;
-
-      // Listen for authentication events
-      _googleSignIn.authenticationEvents.listen((GoogleSignInAuthenticationEvent event) {
-        // event is either SignIn or SignOut
-        if (event is GoogleSignInAuthenticationEventSignIn) {
-          _user = event.user;
-        } else if (event is GoogleSignInAuthenticationEventSignOut) {
-          _user = null;
-        }
-        notifyListeners();
-      });
-    }
-  }
+  // Mock user object for compatibility
+  MockUser? get user => _isSignedIn 
+      ? MockUser(_userName ?? 'User', _userEmail ?? 'user@example.com')
+      : null;
 
   Future<void> signIn() async {
-    _isSigningIn = true;
-    notifyListeners();
-
-    await _ensureInitialized();
-
-    try {
-      // `authenticate()` is the new method replacing signIn
-      final account = await _googleSignIn.authenticate();
-      _user = account;
-
-      // You may then perform authorization (scopes) if needed:
-      // final authorization = await account.authorizationClient
-      //      .authorizationForScopes([... your scopes ...]);
-
-    } catch (e) {
-      // Sign in failed / cancelled
-      _user = null;
-      // optionally log error
-    }
-
-    _isSigningIn = false;
+    // Mock sign-in - not actually connecting to Google
+    await Future.delayed(const Duration(milliseconds: 500));
+    _isSignedIn = true;
+    _userName = 'Local User';
+    _userEmail = 'local@app.com';
     notifyListeners();
   }
 
   Future<void> signOut() async {
-    await _ensureInitialized();
-    await _googleSignIn.signOut();
-    _user = null;
+    _isSignedIn = false;
+    _userName = null;
+    _userEmail = null;
     notifyListeners();
   }
+}
+
+/// Mock user class for compatibility
+class MockUser {
+  final String displayName;
+  final String email;
+
+  MockUser(this.displayName, this.email);
 }

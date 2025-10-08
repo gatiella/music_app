@@ -216,8 +216,8 @@ class _SongListTileState extends State<SongListTile>
 
   Widget _buildGlassAlbumArt(ThemeData theme) {
     return SizedBox(
-      width: 48,
-      height: 48,
+      width: 40,
+      height: 40,
       child: Stack(
         children: [
           // Base album art container

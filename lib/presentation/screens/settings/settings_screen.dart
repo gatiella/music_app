@@ -7,9 +7,6 @@ import 'widgets/about_settings_widget.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:provider/provider.dart';
-import '../../providers/ytmusic_auth_provider.dart';
-import '../../providers/ytmusic_sync_provider.dart';
 
 // --- Settings Model and Provider ---
 class SettingsModel extends ChangeNotifier {
@@ -48,9 +45,9 @@ class SettingsModel extends ChangeNotifier {
 class SettingsProvider extends InheritedNotifier<SettingsModel> {
   const SettingsProvider({
     super.key,
-    required SettingsModel notifier,
-    required Widget child,
-  }) : super(notifier: notifier, child: child);
+    required SettingsModel super.notifier,
+    required super.child,
+  });
 
   static SettingsModel of(BuildContext context) {
     final provider =
@@ -192,37 +189,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             const SizedBox(height: 24),
 
-            _buildSectionHeader(context, 'YouTube Music Account'),
-            Consumer<YTMusicAuthProvider>(
-              builder: (context, authProvider, _) {
-                if (authProvider.isSignedIn) {
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage:
-                          NetworkImage(authProvider.user?.photoUrl ?? ''),
-                    ),
-                    title:
-                        Text(authProvider.user?.displayName ?? 'YouTube Music User'),
-                    subtitle: Text(authProvider.user?.email ?? ''),
-                    trailing: TextButton(
-                      onPressed: () => authProvider.signOut(),
-                      child: const Text('Sign out'),
-                    ),
-                  );
-                } else {
-                  return ListTile(
-                    leading: const Icon(Icons.account_circle),
-                    title: const Text('YouTube Music'),
-                    subtitle: const Text('Sign in to sync your YT Music library'),
-                    trailing: authProvider.isSigningIn
-                        ? const CircularProgressIndicator()
-                        : TextButton(
-                            onPressed: () => authProvider.signIn(),
-                            child: const Text('Sign in'),),
-                          );
-                }
-              },
-            ),
+            // _buildSectionHeader(context, 'YouTube Music Account'),
+            // Consumer<YTMusicAuthProvider>(
+            //   builder: (context, authProvider, _) {
+            //     if (authProvider.isSignedIn) {
+            //       return ListTile(
+            //         leading: CircleAvatar(
+            //           backgroundImage:
+            //               NetworkImage(authProvider.user?.photoUrl ?? ''),
+            //         ),
+            //         title:
+            //             Text(authProvider.user?.displayName ?? 'YouTube Music User'),
+            //         subtitle: Text(authProvider.user?.email ?? ''),
+            //         trailing: TextButton(
+            //           onPressed: () => authProvider.signOut(),
+            //           child: const Text('Sign out'),
+            //         ),
+            //       );
+            //     } else {
+            //       return ListTile(
+            //         leading: const Icon(Icons.account_circle),
+            //         title: const Text('YouTube Music'),
+            //         subtitle: const Text('Sign in to sync your YT Music library'),
+            //         trailing: authProvider.isSigningIn
+            //             ? const CircularProgressIndicator()
+            //             : TextButton(
+            //                 onPressed: () => authProvider.signIn(),
+            //                 child: const Text('Sign in'),),
+            //               );
+            //     }
+            //   },
+            // ),
             const SizedBox(height: 24),
 
             _buildSectionHeader(context, 'Sync'),
@@ -255,29 +252,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const TextStyle(color: Colors.greenAccent, fontSize: 13),
                 ),
               ),
-            Consumer2<YTMusicAuthProvider, YTMusicSyncProvider>(
-              builder: (context, authProvider, syncProvider, _) {
-                return ListTile(
-                  leading: const Icon(Icons.sync),
-                  title: const Text('Sync YT Music Library'),
-                  subtitle: syncProvider.isSyncing
-                      ? const Text('Syncing...')
-                      : syncProvider.error != null
-                          ? Text(syncProvider.error!,
-                              style: const TextStyle(color: Colors.red))
-                          : const Text(
-                              'Sync your YouTube Music library to local database'),
-                  trailing: syncProvider.isSyncing
-                      ? const CircularProgressIndicator()
-                      : TextButton(
-                          onPressed: syncProvider.isSyncing
-                              ? null
-                              : () => syncProvider.syncLibrary(authProvider),
-                          child: const Text('Sync'),
-                        ),
-                );
-              },
-            ),
+            // Consumer2<YTMusicAuthProvider, YTMusicSyncProvider>(
+            //   builder: (context, authProvider, syncProvider, _) {
+            //     return ListTile(
+            //       leading: const Icon(Icons.sync),
+            //       title: const Text('Sync YT Music Library'),
+            //       subtitle: syncProvider.isSyncing
+            //           ? const Text('Syncing...')
+            //           : syncProvider.error != null
+            //               ? Text(syncProvider.error!,
+            //                   style: const TextStyle(color: Colors.red))
+            //               : const Text(
+            //                   'Sync your YouTube Music library to local database'),
+            //       trailing: syncProvider.isSyncing
+            //           ? const CircularProgressIndicator()
+            //           : TextButton(
+            //               onPressed: syncProvider.isSyncing
+            //                   ? null
+            //                   : () => syncProvider.syncLibrary(authProvider),
+            //               child: const Text('Sync'),
+            //             ),
+            //     );
+            //   },
+            // ),
             const SizedBox(height: 24),
 
             _buildSectionHeader(context, 'Audio Processing'),

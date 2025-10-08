@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:music_app/presentation/screens/ytmusic_search_screen.dart';
+import 'package:music_app/presentation/screens/youtube/ytmusic_search_screen.dart';
 import '../presentation/screens/home/home_screen.dart';
 import '../presentation/screens/now_playing/now_playing_screen.dart';
 import '../presentation/screens/search/search_screen.dart';

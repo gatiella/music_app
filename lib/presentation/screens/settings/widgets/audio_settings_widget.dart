@@ -206,7 +206,7 @@ class _AudioSettingsWidgetState extends State<AudioSettingsWidget> {
                         });
                         _saveAutoPauseSetting(value);
                       },
-                      activeColor: Colors.white,
+                      activeThumbColor: Colors.white,
                       activeTrackColor: Colors.white.withAlpha((0.3 * 255).toInt()),
                       inactiveThumbColor: Colors.white.withAlpha((0.5 * 255).toInt()),
                       inactiveTrackColor: Colors.white.withAlpha((0.2 * 255).toInt()),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:music_app/core/services/ytmusic_sync_service.dart';
 import 'package:music_app/presentation/providers/offline_library_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:audio_service/audio_service.dart';
@@ -87,16 +86,13 @@ class MusicPlayerApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => OfflineLibraryProvider(),
         ),
-        // Add these missing providers
+        // YouTube Music Auth & Sync Providers (simplified, no Google Sign-In)
         ChangeNotifierProvider(
           create: (_) => YTMusicAuthProvider(),
         ),
         ChangeNotifierProvider(
-          create: (_) => YTMusicSyncProvider(
-            syncService: YTMusicSyncService(),
-          ),
+          create: (_) => YTMusicSyncProvider(),
         ),
-        
       ],
       child: MusicAppInitializer(
         hasPermission: hasPermission,

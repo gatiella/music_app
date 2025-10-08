@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:music_app/presentation/screens/youtube/ytmusic_video_screen.dart';
 import 'package:provider/provider.dart';
 import '../../providers/ytmusic_favorites_provider.dart';
-import '../../screens/ytmusic_video_screen.dart';
 
 class YTMusicFavoritesTab extends StatelessWidget {
   const YTMusicFavoritesTab({super.key});

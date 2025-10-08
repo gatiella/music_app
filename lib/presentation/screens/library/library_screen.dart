@@ -7,8 +7,8 @@ import 'songs_tab.dart';
 import 'artists_tab.dart';
 import 'albums_tab.dart';
 import 'playlists_tab.dart';
-import 'ytmusic_favorites_tab.dart';
-import 'ytmusic_playlists_tab.dart';
+// import 'ytmusic_favorites_tab.dart';
+// import 'ytmusic_playlists_tab.dart';
 import '../../../app/theme.dart';
 
 class LibraryScreen extends StatefulWidget {
@@ -26,7 +26,7 @@ class _LibraryScreenState extends State<LibraryScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 6, vsync: this);
+    _tabController = TabController(length: 4, vsync: this); // Changed from 6 to 4
     
     // Check permissions and load music automatically on init
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -183,8 +183,8 @@ class _LibraryScreenState extends State<LibraryScreen>
                       ArtistsTab(),
                       AlbumsTab(),
                       PlaylistsTab(),
-                      YTMusicFavoritesTab(),
-                      YTMusicPlaylistsTab(),
+                      // YTMusicFavoritesTab(),
+                      // YTMusicPlaylistsTab(),
                     ],
                   );
                 },
@@ -351,13 +351,14 @@ class _LibraryScreenState extends State<LibraryScreen>
             ],
           ),
         ),
-        indicatorPadding: const EdgeInsets.all(2),
+        indicatorSize: TabBarIndicatorSize.tab, // Makes indicator fit the entire tab
+        indicatorPadding: EdgeInsets.zero, // Removed padding
         dividerColor: Colors.transparent,
         labelColor: Colors.white,
         unselectedLabelColor: Colors.white.withOpacity(0.6),
-        labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
         unselectedLabelStyle: const TextStyle(
-          fontSize: 14,
+          fontSize: 13,
           fontWeight: FontWeight.w500,
         ),
         tabs: const [
@@ -365,8 +366,8 @@ class _LibraryScreenState extends State<LibraryScreen>
           Tab(text: 'Artists'),
           Tab(text: 'Albums'),
           Tab(text: 'Playlists'),
-          Tab(text: 'YT Music'),
-          Tab(text: 'YT Playlists'),
+          // Tab(text: 'YT Music'),
+          // Tab(text: 'YT Playlists'),
         ],
       ),
     );

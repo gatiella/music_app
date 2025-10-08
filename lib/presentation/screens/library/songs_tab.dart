@@ -5,8 +5,45 @@ import 'package:provider/provider.dart';
 import '../../providers/music_library_provider.dart';
 import '../../providers/audio_player_provider.dart';
 
-class SongsTab extends StatelessWidget {
+class SongsTab extends StatefulWidget {
   const SongsTab({super.key});
+
+  @override
+  State<SongsTab> createState() => _SongsTabState();
+}
+
+class _SongsTabState extends State<SongsTab> {
+  final ScrollController _scrollController = ScrollController();
+  bool _showScrollToTop = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.offset > 200 && !_showScrollToTop) {
+      setState(() => _showScrollToTop = true);
+    } else if (_scrollController.offset <= 200 && _showScrollToTop) {
+      setState(() => _showScrollToTop = false);
+    }
+  }
+
+  void _scrollToTop() {
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeOutCubic,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,53 +51,121 @@ class SongsTab extends StatelessWidget {
       builder: (context, libraryProvider, audioProvider, child) {
         final songs = libraryProvider.songs;
 
-        return Column(
+        return Stack(
           children: [
-            // Songs count
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  Text(
-                    '${songs.length} songs',
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
+            Column(
+              children: [
+                // Songs count
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                  child: Row(
+                    children: [
+                      Text(
+                        '${songs.length} songs',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.6),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
 
-            // Songs list
-            Expanded(
-              child: ListView.builder(
-                itemCount: songs.length,
-                itemBuilder: (context, index) {
-                  final song = songs[index];
-                  final isCurrentSong =
-                      audioProvider.currentSong?.id == song.id;
+                // Songs list with smooth scrolling - REMOVED ShaderMask
+                Expanded(
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics(),
+                    ),
+                    padding: const EdgeInsets.only(bottom: 100, top: 4),
+                    itemCount: songs.length,
+                    itemBuilder: (context, index) {
+                      final song = songs[index];
+                      final isCurrentSong = audioProvider.currentSong?.id == song.id;
 
-                  return SongListTile(
-                    song: song,
-                    isCurrentSong: isCurrentSong,
-                    isPlaying: isCurrentSong && audioProvider.isPlaying,
-                    onTap: () {
-                      // Play the song first
-                      audioProvider.playPlaylist(songs, startIndex: index);
-                      
-                      // Then navigate to Now Playing screen
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const NowPlayingScreen(),
+                      return TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0.0, end: 1.0),
+                        duration: Duration(milliseconds: 200 + (index * 50).clamp(0, 400)),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, value, child) {
+                          return Transform.translate(
+                            offset: Offset(0, 20 * (1 - value)),
+                            child: Opacity(
+                              opacity: value,
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: SongListTile(
+                          song: song,
+                          isCurrentSong: isCurrentSong,
+                          isPlaying: isCurrentSong && audioProvider.isPlaying,
+                          onTap: () {
+                            audioProvider.playPlaylist(songs, startIndex: index);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const NowPlayingScreen(),
+                              ),
+                            );
+                          },
+                          onMorePressed: () {
+                            _showSongOptions(context, song);
+                          },
                         ),
                       );
                     },
-                    onMorePressed: () {
-                      _showSongOptions(context, song);
-                    },
-                  );
-                },
-              ),
+                  ),
+                ),
+              ],
             ),
+
+            // Scroll to top button
+            if (_showScrollToTop)
+              Positioned(
+                right: 16,
+                bottom: 100,
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOutBack,
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: value,
+                      child: child,
+                    );
+                  },
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Theme.of(context).primaryColor,
+                            Theme.of(context).primaryColor.withOpacity(0.8),
+                          ],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Theme.of(context).primaryColor.withOpacity(0.4),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_upward, color: Colors.white),
+                        onPressed: _scrollToTop,
+                        iconSize: 24,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
           ],
         );
       },
@@ -70,12 +175,29 @@ class SongsTab extends StatelessWidget {
   void _showSongOptions(BuildContext context, song) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
       builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Drag handle
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Container(
@@ -122,9 +244,9 @@ class SongsTab extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 context.read<AudioPlayerProvider>().addToQueue(song);
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('Added to queue')));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Added to queue')),
+                );
               },
             ),
             ListTile(
@@ -137,7 +259,6 @@ class SongsTab extends StatelessWidget {
               ),
               onTap: () {
                 Navigator.pop(context);
-                // Toggle favorite
               },
             ),
             ListTile(
@@ -145,7 +266,6 @@ class SongsTab extends StatelessWidget {
               title: const Text('Add to Playlist'),
               onTap: () {
                 Navigator.pop(context);
-                // Show playlist selection
               },
             ),
             ListTile(
@@ -153,7 +273,6 @@ class SongsTab extends StatelessWidget {
               title: const Text('Share'),
               onTap: () {
                 Navigator.pop(context);
-                // Share song
               },
             ),
             ListTile(
