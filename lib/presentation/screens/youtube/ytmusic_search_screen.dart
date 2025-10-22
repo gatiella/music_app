@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:music_app/core/utils/connectivity_helper.dart';
 import 'package:music_app/data/models/ytmusic_favorite.dart';
 import 'package:music_app/data/sources/ytmusic_source.dart';
 import 'package:music_app/presentation/screens/youtube/ytmusic_video_screen.dart';
@@ -76,179 +77,202 @@ class _YTMusicSearchScreenState extends State<YTMusicSearchScreen>
     _loadGenreMusic(_genres[0]['name'] as String, _genres[0]['query'] as String);
   }
 
-  Future<void> _loadGenreMusic(String genreName, String query) async {
-    if (!mounted) return;
+Future<void> _loadGenreMusic(String genreName, String query) async {
+  if (!mounted) return;
 
-    // Check if cache is still valid
-    final cacheTime = _genreCacheTime[genreName];
-    if (cacheTime != null && 
-        DateTime.now().difference(cacheTime) < _cacheExpiration &&
-        (_genreMusic[genreName]?.isNotEmpty ?? false)) {
-      return; // Use cached data
+  // Check cache first
+  final cacheTime = _genreCacheTime[genreName];
+  if (cacheTime != null && 
+      DateTime.now().difference(cacheTime) < _cacheExpiration &&
+      (_genreMusic[genreName]?.isNotEmpty ?? false)) {
+    return;
+  }
+  
+  setState(() {
+    _isLoadingGenre = true;
+  });
+  
+  try {
+    // Remove connectivity check - let the API call fail naturally
+    final results = await _ytSource.search(query).timeout(
+      const Duration(seconds: 30),
+      onTimeout: () {
+        throw Exception('Request timed out. Please check your internet connection.');
+      },
+    );
+    
+    if (mounted) {
+      setState(() {
+        _genreMusic[genreName] = results.take(12).toList();
+        _genreCacheTime[genreName] = DateTime.now();
+        _isLoadingGenre = false;
+      });
     }
-    
-    setState(() {
-      _isLoadingGenre = true;
-      _genreMusic[genreName] = []; // Clear for loading state
-    });
-    
-    try {
-      final results = await _ytSource.search(query);
-      if (mounted) {
-        setState(() {
-          _genreMusic[genreName] = results.take(12).toList();
-          _genreCacheTime[genreName] = DateTime.now();
-          _isLoadingGenre = false;
-        });
+  } catch (e) {
+    debugPrint('Error loading $genreName: $e');
+    if (mounted) {
+      setState(() {
+        _isLoadingGenre = false;
+        if (_genreMusic[genreName]?.isEmpty ?? true) {
+          _genreMusic[genreName] = [];
+        }
+      });
+      
+      // Determine error message
+      String errorMessage;
+      if (e.toString().contains('timed out') || 
+          e.toString().contains('SocketException') ||
+          e.toString().contains('Failed host lookup')) {
+        errorMessage = 'No internet connection';
+      } else if (e.toString().contains('ClientException')) {
+        errorMessage = 'Failed to connect to YouTube';
+      } else {
+        errorMessage = 'Failed to load $genreName music';
       }
-    } catch (e) {
-      debugPrint('Error loading $genreName: $e');
-      if (mounted) {
-        setState(() {
-          _isLoadingGenre = false;
-          // Show error in UI
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.white),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text('Failed to load $genreName music. Check your connection.'),
-                  ),
-                ],
-              ),
-              backgroundColor: Colors.red[700],
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              duration: const Duration(seconds: 3),
-              action: SnackBarAction(
-                label: 'Retry',
-                textColor: Colors.white,
-                onPressed: () {
-                  _loadGenreMusic(genreName, query);
-                },
-              ),
-            ),
-          );
-        });
-      }
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(child: Text(errorMessage)),
+            ],
+          ),
+          backgroundColor: Colors.red[700],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'Retry',
+            textColor: Colors.white,
+            onPressed: () => _loadGenreMusic(genreName, query),
+          ),
+        ),
+      );
     }
   }
+}
 
-  void _onGenreSelected(int index) {
-    if (_selectedGenreIndex == index) return;
-    
-    setState(() {
-      _selectedGenreIndex = index;
-    });
-    
-    final genre = _genres[index];
+void _onGenreSelected(int index) {
+  if (_selectedGenreIndex == index) return;
+  
+  setState(() {
+    _selectedGenreIndex = index;
+  });
+  
+  final genre = _genres[index];
+  // Only load if not already cached
+  final cachedData = _genreMusic[genre['name']];
+  if (cachedData == null || cachedData.isEmpty) {
     _loadGenreMusic(
       genre['name'] as String,
       genre['query'] as String,
     );
   }
+}
 
-  Future<void> _search() async {
-    final query = _controller.text.trim();
-    if (query.isEmpty) return;
-    
-    if (!mounted) return;
-    
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    
-    try {
-      final results = await _ytSource.search(query);
-      if (mounted) {
-        setState(() {
-          _results = results;
-          _loading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = 'Search failed. Please try again.';
-          _loading = false;
-        });
-      }
+Future<void> _search() async {
+  final query = _controller.text.trim();
+  if (query.isEmpty) return;
+  
+  if (!mounted) return;
+  
+  setState(() {
+    _loading = true;
+    _error = null;
+  });
+  
+  try {
+    final results = await _ytSource.search(query);
+    if (mounted) {
+      setState(() {
+        _results = results;
+        _loading = false;
+      });
+    }
+  } catch (e) {
+    debugPrint('Search error: $e');
+    if (mounted) {
+      setState(() {
+        _error = 'Search failed. Please check your connection and try again.';
+        _loading = false;
+      });
     }
   }
+}
 
-  Future<void> _play(Video video) async {
-    if (!mounted) return;
-    
-    // Track which genre this song is from
-    _trackGenrePlay();
-    
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    
-    try {
-      final url = await _ytSource.getAudioStreamUrl(video.id.value);
-      if (url != null && mounted) {
-        await Provider.of<AudioPlayerProvider>(context, listen: false)
-            .playCustomUrl(
-          url,
-          title: video.title,
-          artist: video.author,
-          artUri: 'https://img.youtube.com/vi/${video.id.value}/mqdefault.jpg',
-        );
-        
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.play_circle_filled, color: Colors.white),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Playing: ${video.title}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+// 5. Update _play method with better error handling
+Future<void> _play(Video video) async {
+  if (!mounted) return;
+  
+  // Track which genre this song is from
+  _trackGenrePlay();
+  
+  setState(() {
+    _loading = true;
+    _error = null;
+  });
+  
+  try {
+    final url = await _ytSource.getAudioStreamUrl(video.id.value);
+    if (url != null && mounted) {
+      await Provider.of<AudioPlayerProvider>(context, listen: false)
+          .playCustomUrl(
+        url,
+        title: video.title,
+        artist: video.author,
+        artUri: 'https://img.youtube.com/vi/${video.id.value}/mqdefault.jpg',
+      );
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.play_circle_filled, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Playing: ${video.title}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ],
-              ),
-              duration: const Duration(seconds: 2),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+                ),
+              ],
             ),
-          );
-        }
-      } else {
-        if (mounted) {
-          setState(() {
-            _error = 'Could not play this track.';
-          });
-        }
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
       }
-    } catch (e) {
+    } else {
       if (mounted) {
         setState(() {
-          _error = 'Playback error. Please try again.';
-        });
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _loading = false;
+          _error = 'Could not get stream URL for this track.';
         });
       }
     }
+  } catch (e) {
+    debugPrint('Playback error: $e');
+    if (mounted) {
+      setState(() {
+        _error = 'Playback error: ${e.toString()}';
+      });
+    }
+  } finally {
+    if (mounted) {
+      setState(() {
+        _loading = false;
+      });
+    }
   }
-
+}
   void _trackGenrePlay() {
     final currentGenre = _genres[_selectedGenreIndex]['name'] as String;
     _genrePlayCount[currentGenre] = (_genrePlayCount[currentGenre] ?? 0) + 1;
@@ -284,7 +308,6 @@ class _YTMusicSearchScreenState extends State<YTMusicSearchScreen>
     _searchDebounce?.cancel();
     _gradientController.dispose();
     _controller.dispose();
-    _ytSource.close();
     super.dispose();
   }
 
